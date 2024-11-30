@@ -1,0 +1,24 @@
+{
+  "name": "squat-with-me",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "deploy": "vercel deploy"
+    "ws": "node api/ws.js",
+    "dev:all": "concurrently \"vercel dev\" \"npm run ws\""
+  },
+  "dependencies": {
+    "@vercel/kv": "^0.2.0",
+    "@vercel/node": "^2.5.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0",
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

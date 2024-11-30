@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squat With Me</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <div id="user-setup" class="hidden">
+            <h2>Welcome to Squat With Me!</h2>
+            <input type="text" id="username" placeholder="Choose your username">
+            <button id="save-username">Start Squatting</button>
+            <p id="username-error" class="error hidden"></p>
+        </div>
+
+        <div id="main-app" class="hidden">
+            <header>
+                <h1>Squat With Me</h1>
+                <button id="squat-button">I Squat Today! 🏋️‍♂️</button>
+            </header>
+
+            <div id="stats">
+                <div class="user-info">
+                    Logged in as: <span id="current-username">-</span>
+                </div>
+                <div class="current-streak">
+                    Your Current Streak: <span id="user-streak">0</span> days
+                </div>
+                <div class="longest-streak">
+                    Longest Streak: <span id="longest-streak">0</span> days by 
+                    <span id="streak-holder">-</span>
+                </div>
+            </div>
+
+            <div id="grid-container">
+                <div id="squat-grid"></div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+</html> 
