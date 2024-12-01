@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vercel dev",
     "build": "vercel build",
-    "deploy": "vercel deploy"
+    "deploy": "vercel deploy",
     "ws": "node api/ws.js",
     "dev:all": "concurrently \"vercel dev\" \"npm run ws\""
   },

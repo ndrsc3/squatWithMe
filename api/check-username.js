@@ -1,37 +1,37 @@
 import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
-    // Basic request logging
-    console.log('Request received:', {
-        method: req.method,
-        body: req.body,
-        headers: req.headers
-    });
-
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        return res.status(200).end();
-    }
-
-    // Method check
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
+    console.group('🔵 [API] Check Username');
     try {
-        // Basic response to test the endpoint
-        return res.status(200).json({ 
-            message: 'Endpoint working',
-            receivedUsername: req.body?.username 
+        const { username } = req.body;
+        
+        // Check not empty
+        if (!username) {
+            console.warn('🟡 [API] Missing username in request');
+            console.groupEnd();
+            return res.status(400).json({ error: 'Username is required' });
+        }
+
+        // Check username in index
+        const userIndex = await kv.get('userIndex') || {};
+        console.debug('🔵 [API] Checking username against index:', {
+            usernameToCheck: username,
+            indexSize: Object.keys(userIndex).length
         });
+
+        // Check if username exists (case insensitive)
+        if (userIndex[username.toLowerCase()]) {
+            console.warn('🟡 [API] Username exists:', username);
+            console.groupEnd();
+            return res.status(409).json({ error: 'Username already taken' });
+        }
+
+        console.debug('🔵 [API] Username available:', username);
+        console.groupEnd();
+        return res.status(200).json({ available: true });
     } catch (error) {
-        console.error('Error in handler:', error);
-        return res.status(500).json({ 
-            error: 'Internal server error',
-            details: error.message 
-        });
+        console.error('🔴 [API] Error:', error);
+        console.groupEnd();
+        return res.status(500).json({ error: 'Internal server error' });
     }
 } 

@@ -15,30 +15,65 @@ class SquatApp {
 
     async init() {
         console.debug('🔵 [Init] Starting initialization');
-        this.setupWebSocket();
+        //this.setupWebSocket();
         this.setupEventListeners();
-        this.loadInitialData();
-
+        
+        // Wait for user setup before loading data
         await this.setupUser();
         if (this.username) {
             console.debug('🔵 [User] Found user:', this.username);
+            await this.loadInitialData();
         } else {
             console.debug('🔵 [User] No user found, showing setup screen');
         }
     }
 
     async setupUser() {
-        console.debug('🔵 Setup User');
-        const storedUser = localStorage.getItem('squatUser');
-        if (storedUser) {
-            const userData = JSON.parse(storedUser);
-            this.userId = userData.userId;
-            this.username = userData.username;
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('current-username').textContent = this.username;
-        } else {
+        console.group('🔵 [User] Setup Process');
+        try {
+            // Debug localStorage state
+            console.debug('🔵 [Storage] All localStorage keys:', Object.keys(localStorage));
+            
+            // Get User Stored Locally
+            const storedUser = localStorage.getItem('squatUser');
+            console.debug('🔵 [Storage] Raw stored user data:', storedUser);
+            
+            if (storedUser) {
+                try {
+                    const userData = JSON.parse(storedUser);
+                    console.debug('🔵 [Storage] Parsed user data:', userData);
+                    
+                    if (!userData.userId || !userData.username) {
+                        console.warn('🟡 [Storage] Invalid user data structure:', userData);
+                        localStorage.removeItem('squatUser');
+                        document.getElementById('user-setup').classList.remove('hidden');
+                        return;
+                    }
+                    
+                    this.userId   = userData.userId;
+                    this.username = userData.username;
+                    
+                    console.debug('🔵 [User] Successfully loaded user:', {
+                        userId: this.userId,
+                        username: this.username
+                    });
+                    
+                    document.getElementById('main-app').classList.remove('hidden');
+                    document.getElementById('current-username').textContent = this.username;
+                } catch (parseError) {
+                    console.error('🔴 [Storage] JSON parse error:', parseError);
+                    localStorage.removeItem('squatUser');
+                    document.getElementById('user-setup').classList.remove('hidden');
+                }
+            } else {
+                console.debug('🔵 [Storage] No stored user found');
+                document.getElementById('user-setup').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('🔴 [Storage] Error in setup process:', error);
             document.getElementById('user-setup').classList.remove('hidden');
         }
+        console.groupEnd();
     }
 
     setupWebSocket() {
@@ -116,65 +151,105 @@ class SquatApp {
     }
 
     async saveUsername() {
-        console.debug('🔵 Save Username');
-        const usernameInput = document.getElementById('username');
-        const username = usernameInput.value.trim();
-        
-        if (!username) {
-            console.warn('🟡 [User] Empty username submitted');
-            this.showError('Username cannot be empty');
-            return;
-        }
-
-        console.debug('🔵 [User] Attempting to save username:', username);
+        console.group('🔵 [User] Save Username Process');
         try {
-            console.time('usernameCheck');
-            const response = await fetch('/api/check-username', {
+            const usernameInput = document.getElementById('username');
+            const username = usernameInput.value.trim();
+            const errorElement = document.getElementById('username-error');
+            
+            if (!username) {
+                console.warn('🟡 [User] Empty username');
+                this.showError('Please enter a username');
+                return;
+            }
+
+            // Check username availability
+            const checkResponse = await fetch('/api/check-username', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username })
             });
 
-            const responseText = await response.text();
-            console.debug('🔵 [User] Raw response:', responseText);
-            
-            try {
-                const data = JSON.parse(responseText);
-                console.debug('🔵 [User] Parsed response:', data);
-            } catch (parseError) {
-                console.error('🔴 [User] JSON parse error:', parseError);
-                this.showError('Server returned invalid response');
+            if (checkResponse.status === 409) {
+                console.warn('🟡 [User] Username taken:', username);
+                errorElement.textContent = 'Username already taken';
+                errorElement.classList.remove('hidden');
+                usernameInput.classList.add('error');
                 return;
             }
 
-            console.timeEnd('usernameCheck');
+            // Generate userId if not exists
+            if (!this.userId) {
+                this.userId = crypto.randomUUID();
+            }
 
-            if (!response.ok) {
-                console.warn('🟡 [User] Username validation failed:', data.error);
-                this.showError(data.error || 'Username already taken');
+            // Save user
+            const saveResponse = await fetch('/api/save-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: this.userId,
+                    username
+                })
+            });
+
+            if (saveResponse.status === 409) {
+                console.warn('🟡 [User] Username taken:', username);
+                errorElement.textContent = 'Username already taken';
+                errorElement.classList.remove('hidden');
+                usernameInput.classList.add('error');
                 return;
             }
 
-            this.userId = crypto.randomUUID();
+            if (!saveResponse.ok) {
+                throw new Error(`HTTP error! status: ${saveResponse.status}`);
+            }
+
+            // Update local storage
             this.username = username;
-            
-            console.debug('🔵 [User] Username saved. User ID:', this.userId);
             localStorage.setItem('squatUser', JSON.stringify({
                 userId: this.userId,
                 username: this.username
             }));
 
-            document.getElementById('current-username').textContent = this.username;
-
+            // Update UI
             document.getElementById('user-setup').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
-            
-            this.setupWebSocket();
-            this.loadInitialData();
+            document.getElementById('current-username').textContent = this.username;
+
+            // Load initial data
+            await this.loadInitialData();
         } catch (error) {
             console.error('🔴 [User] Error saving username:', error);
-            this.showError('Error saving username');
+            this.showError('Failed to save username. Please try again.');
         }
+        console.groupEnd();
+    }
+
+    async verifyStorageAccess() {
+        const result = { available: false, reason: [] };
+        
+        // Check quota
+        try {
+            const quota = await navigator.storage?.estimate();
+            if (quota && quota.quota - quota.usage < 1024) {
+                result.reason.push('Storage quota full');
+            }
+        } catch (e) {
+            result.reason.push('Cannot check quota');
+        }
+
+        // Check basic access
+        try {
+            const testKey = '__test__';
+            localStorage.setItem(testKey, testKey);
+            localStorage.removeItem(testKey);
+        } catch (e) {
+            result.reason.push('Cannot access localStorage');
+        }
+
+        result.available = result.reason.length === 0;
+        return result;
     }
 
     showError(message) {
@@ -184,65 +259,110 @@ class SquatApp {
     }
 
     async loadInitialData() {
-        console.debug('🔵 Load Initial Data');
-        console.group('Loading Initial Data');
+        console.group('🔵 [Data] Loading Initial Data');
         try {
-            console.time('dataLoad');
             const response = await fetch('/api/get-users');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            console.timeEnd('dataLoad');
             
-            console.debug('🔵 [Data] Users loaded:', data.users.length);
+            // Update squat button state
+            const today = new Date().toISOString().split('T')[0];
+            const currentUser = data.users.find(u => u.userId === this.userId);
+            const hasSquattedToday = currentUser?.squats?.includes(today) || false;
+            this.updateSquatButtonState(hasSquattedToday);
+            
+            // Calculate user's current streak
+            if (currentUser && currentUser.squats) {
+                const sortedSquats = [...currentUser.squats].sort();
+                let streak = 0;
+                const today = new Date().toISOString().split('T')[0];
+                let checkDate = new Date(today);
+
+                // Count backwards from today to find streak
+                while (sortedSquats.includes(checkDate.toISOString().split('T')[0])) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                }
+
+                data.stats.userStreak = streak;
+            } else {
+                data.stats.userStreak = 0;
+            }
+
+            console.debug('🔵 [Data] Received users:', {
+                count: data.users.length,
+                stats: data.stats
+            });
+
+            // Render Grid
             this.renderGrid(data.users);
             this.updateStats(data.stats);
+            
         } catch (error) {
             console.error('🔴 [Data] Failed to load initial data:', error);
+            this.showError('Failed to load data. Please try again later.');
         }
         console.groupEnd();
     }
 
     async recordSquat() {
-        console.debug('🔵 Record Squat');
+        console.group('🔵 [Squat] Recording Squat');
         const today = new Date().toISOString().split('T')[0];
-        if (this.lastSquatDate === today) {
-            console.warn('🟡 [Squat] Already recorded squat for today');
-            return;
-        }
+        const squatButton = document.getElementById('squat-button');
+        const squatStatus = document.getElementById('squat-status');
 
-        console.group('Recording Squat');
         try {
-            console.time('squatRecord');
+            // Check if already squatted today
+            if (this.lastSquatDate === today) {
+                console.debug('🔵 [Squat] Already recorded for today');
+                this.updateSquatButtonState(true);
+                return;
+            }
+
             const response = await fetch('/api/record-squat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: this.userId,
-                    username: this.username,
                     date: today
                 })
             });
-            console.timeEnd('squatRecord');
 
-            if (response.ok) {
-                console.debug('🔵 [Squat] Successfully recorded');
-                this.lastSquatDate = today;
-                document.getElementById('squat-button').disabled = true;
-                
-                // Store offline backup
-                const offlineSquats = JSON.parse(localStorage.getItem('offlineSquats') || '[]');
-                offlineSquats.push({ date: today, synced: true });
-                localStorage.setItem('offlineSquats', JSON.stringify(offlineSquats));
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            console.debug('🔵 [Squat] Successfully recorded');
+            this.lastSquatDate = today;
+            this.updateSquatButtonState(true);
+            
+            // Reload data to update UI
+            await this.loadInitialData();
         } catch (error) {
-            console.warn('🟡 [Squat] Failed to record online, storing offline:', error);
+            console.error('🔴 [Squat] Failed to record:', error);
+            // Store offline
             const offlineSquats = JSON.parse(localStorage.getItem('offlineSquats') || '[]');
             offlineSquats.push({ date: today, synced: false });
             localStorage.setItem('offlineSquats', JSON.stringify(offlineSquats));
             
-            this.lastSquatDate = today;
-            document.getElementById('squat-button').disabled = true;
+            this.showError('Failed to record squat. It will sync when you\'re back online.');
         }
         console.groupEnd();
+    }
+
+    updateSquatButtonState(hasSquatted) {
+        const squatButton = document.getElementById('squat-button');
+        const squatStatus = document.getElementById('squat-status');
+        
+        if (hasSquatted) {
+            squatButton.classList.add('hidden');
+            squatStatus.textContent = "You've already done your squat today! 💪";
+            squatStatus.classList.remove('hidden');
+        } else {
+            squatButton.classList.remove('hidden');
+            squatStatus.textContent = '';
+            squatStatus.classList.add('hidden');
+        }
     }
 
     handleWebSocketMessage(data) {
@@ -290,23 +410,22 @@ class SquatApp {
     }
 
     renderGrid(users) {
-        console.debug('🔵 Render Grid', { userCount: users.length, users });
-        const grid = document.getElementById('squat-grid');
-        grid.innerHTML = '';
-
-        // Ensure we have users to display
-        if (!users || users.length === 0) {
-            console.debug('🔵 No users to display in grid');
-            const emptyMessage = document.createElement('div');
-            emptyMessage.textContent = 'No users found';
-            emptyMessage.className = 'grid-empty-message';
-            grid.appendChild(emptyMessage);
-            return;
-        }
+        console.group('🔵 Grid Rendering');
+        console.debug('Current userId:', this.userId);
+        console.debug('All user IDs:', users.map(u => u.userId));
 
         // Get unique users by userId
         const uniqueUsers = Array.from(new Map(users.map(user => [user.userId, user])).values());
-        console.debug('🔵 Unique users:', uniqueUsers.length);
+        console.debug('Unique user IDs:', uniqueUsers.map(u => u.userId));
+        
+        // Check if current user exists in the data
+        const currentUserExists = uniqueUsers.some(u => u.userId === this.userId);
+        if (!currentUserExists) {
+            console.warn('🟡 Current user not found in data:', {
+                currentUserId: this.userId,
+                availableIds: uniqueUsers.map(u => u.userId)
+            });
+        }
 
         // Sort users (current user first, then alphabetically by username)
         const sortedUsers = uniqueUsers.sort((a, b) => {
@@ -314,16 +433,20 @@ class SquatApp {
             if (b.userId === this.userId) return 1;
             return a.username.localeCompare(b.username);
         });
+        console.groupEnd();
 
-        // Get last 27 days including today
+        // Get last 10 days including today
         const today = new Date();
-        const dates = Array.from({length: 27}, (_, i) => {
+        const dates = Array.from({length: 10}, (_, i) => {
             const date = new Date(today);
-            date.setDate(date.getDate() - (26 - i));
+            date.setDate(date.getDate() - (9 - i));
             return date.toISOString().split('T')[0];
         });
 
         // Setup grid layout
+        const grid = document.getElementById('squat-grid');
+        grid.innerHTML = '';  // Clear all existing content
+
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `minmax(100px, auto) repeat(${dates.length}, 1fr)`;
         grid.style.gridTemplateRows = `auto repeat(${sortedUsers.length}, auto)`;
@@ -339,6 +462,8 @@ class SquatApp {
             const cell = document.createElement('div');
             cell.className = 'grid-cell date-header';
             const dateObj = new Date(date);
+            
+            // Format date as MM/DD
             cell.textContent = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
             
             // Highlight today's column
@@ -393,8 +518,8 @@ class SquatApp {
     updateStats(stats) {
         console.debug('🔵 Update Stats');
         document.getElementById('user-streak').textContent = stats.userStreak || 0;
-        document.getElementById('longest-streak').textContent = stats.longestStreak || 0;
-        document.getElementById('streak-holder').textContent = stats.streakHolder || '-';
+        //document.getElementById('longest-streak').textContent = stats.longestStreak || 0;
+        //document.getElementById('streak-holder').textContent = stats.streakHolder || '-';
     }
 
     // Offline sync handling
@@ -424,4 +549,4 @@ class SquatApp {
     }
 }
 
-new SquatApp(); 
+new SquatApp();

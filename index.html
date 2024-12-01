@@ -17,24 +17,27 @@
 
         <div id="main-app" class="hidden">
             <header>
-                <h1>Squat With Me</h1>
-                <button id="squat-button">I Squat Today! 🏋️‍♂️</button>
+                <div class="header-content">
+                    <h1>Squat With Me</h1>
+                    <p id="subtitle">It's better with friends... An app by Niko</p>
+                </div>
             </header>
 
             <div id="stats">
-                <div class="user-info">
-                    Logged in as: <span id="current-username">-</span>
-                </div>
-                <div class="current-streak">
-                    Your Current Streak: <span id="user-streak">0</span> days
-                </div>
-                <div class="longest-streak">
-                    Longest Streak: <span id="longest-streak">0</span> days by 
-                    <span id="streak-holder">-</span>
+                <div class="stats-list">
+                    <p class="stats-item">Current User: <span id="current-username">-</span></p>
+                    <p class="stats-item">Current Streak: <span id="user-streak">0</span> days</p>
+                    <!-- <p class="stats-item">Longest Streak: <span id="longest-streak">0</span> days by <span id="streak-holder">-</span></p> -->
                 </div>
             </div>
 
+            <div id="user-input">
+                <button id="squat-button">I Squat Today! 🏋️‍♂️</button>
+                <div id="squat-status" class="hidden"></div>
+            </div>
+
             <div id="grid-container">
+                <h2>Stats</h2>
                 <div id="squat-grid"></div>
             </div>
         </div>

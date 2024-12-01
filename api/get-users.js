@@ -1,41 +1,42 @@
 import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
+    console.group('🔵 [API] Get Users');
     if (req.method !== 'GET') {
+        console.warn('🟡 [API] Invalid method:', req.method);
+        console.groupEnd();
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        console.debug('🔵 [User] Get Users');
-        const users = await getActiveUsers();
-        const stats = await calculateStats(users);
-        res.status(200).json({ users, stats });
+        // Get user index
+        const userIndex = await kv.get('userIndex') || {};
+        const userIds = Object.values(userIndex);
+        
+        // Get all users in parallel
+        const userPromises = userIds.map(id => kv.get(`user:${id}`));
+        const users = await Promise.all(userPromises);
+        
+        console.debug('🔵 [API] Retrieved users:', {
+            count: users.length,
+            users: users.map(u => ({ userId: u.userId, username: u.username }))
+        });
+
+        // Filter out inactive users (30 days)
+        const activeUsers = users.filter(user => {
+            const lastActive = new Date(user.lastActive).getTime();
+            return Date.now() - lastActive <= 30 * 24 * 60 * 60 * 1000;
+        });
+
+        const stats = await calculateStats(activeUsers);
+        
+        console.groupEnd();
+        res.status(200).json({ users: activeUsers, stats });
     } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('🔴 [API] Error fetching users:', error);
+        console.groupEnd();
         res.status(500).json({ error: 'Failed to fetch users' });
     }
-}
-
-async function getActiveUsers() {
-    console.debug('🔵 [User] Fetching active users');
-    const userKeys = await kv.keys('user:*:username');
-    const users = [];
-
-    for (const key of userKeys) {
-        const userId = key.split(':')[1];
-        const lastActive = await kv.get(`user:${userId}:lastActive`);
-
-        // Skip inactive users (30 days)
-        if (Date.now() - lastActive > 30 * 24 * 60 * 60 * 1000) {
-            continue;
-        }
-
-        const username = await kv.get(`user:${userId}:username`);
-        const squats = await kv.smembers(`user:${userId}:squats`) || [];
-        users.push({ userId, username, squats });
-    }
-
-    return users;
 }
 
 async function calculateStats(users) {
