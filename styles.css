@@ -252,3 +252,13 @@ h1 {
     color: #666;
     font-style: italic;
 }
+
+.streak-cell {
+    text-align: center;
+    font-weight: bold;
+    background-color: #f5f5f5;
+}
+
+.grid-cell.streak-cell {
+    border-right: 2px solid #ddd;
+}

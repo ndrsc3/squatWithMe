@@ -412,11 +412,12 @@ class SquatApp {
 
     renderGrid(users) {
         console.group('🔵 Grid Rendering');
-        console.debug('Current userId:', this.userId);
-        console.debug('All user IDs:', users.map(u => u.userId));
-
+        
+        // Calculate streaks for all users
+        const usersWithStreaks = this.calculateUserStreaks(users);
+        
         // Get unique users by userId
-        const uniqueUsers = Array.from(new Map(users.map(user => [user.userId, user])).values());
+        const uniqueUsers = Array.from(new Map(usersWithStreaks.map(user => [user.userId, user])).values());
         
         // Sort users (current user first, then alphabetically by username)
         const sortedUsers = uniqueUsers.sort((a, b) => {
@@ -429,7 +430,7 @@ class SquatApp {
         const today = new Date();
         const dates = Array.from({length: this.displayDays}, (_, i) => {
             const date = new Date(today);
-            date.setDate(date.getDate() - i); // Changed to count backwards from i
+            date.setDate(date.getDate() - i);
             return date.toISOString().split('T')[0];
         });
 
@@ -438,7 +439,7 @@ class SquatApp {
         grid.innerHTML = '';
 
         grid.style.display = 'grid';
-        grid.style.gridTemplateColumns = `minmax(100px, auto) repeat(${dates.length}, 1fr)`;
+        grid.style.gridTemplateColumns = `minmax(100px, auto) minmax(80px, auto) repeat(${dates.length}, 1fr)`;
         grid.style.gridTemplateRows = `auto repeat(${sortedUsers.length}, auto)`;
 
         // Add header row
@@ -447,7 +448,13 @@ class SquatApp {
         cornerCell.textContent = `Users (${sortedUsers.length})`;
         grid.appendChild(cornerCell);
 
-        // Add date headers (now in reverse order)
+        // Add streak header
+        const streakHeader = document.createElement('div');
+        streakHeader.className = 'grid-cell corner-header';
+        streakHeader.textContent = 'Streak';
+        grid.appendChild(streakHeader);
+
+        // Add date headers
         dates.forEach(date => {
             const cell = document.createElement('div');
             cell.className = 'grid-cell date-header';
@@ -471,7 +478,7 @@ class SquatApp {
             grid.appendChild(cell);
         });
 
-        // Add user rows with squat data
+        // Add user rows with streak and squat data
         sortedUsers.forEach(user => {
             // Username cell
             const nameCell = document.createElement('div');
@@ -481,6 +488,16 @@ class SquatApp {
             }
             nameCell.textContent = user.username;
             grid.appendChild(nameCell);
+
+            // Streak cell
+            const streakCell = document.createElement('div');
+            streakCell.className = 'grid-cell streak-cell';
+            if (user.currentStreak > 0) {
+                streakCell.textContent = `${user.currentStreak}🔥`;
+            } else {
+                streakCell.textContent = '0';
+            }
+            grid.appendChild(streakCell);
 
             // Squat cells for each date
             dates.forEach(date => {
@@ -536,6 +553,30 @@ class SquatApp {
         }
 
         localStorage.setItem('offlineSquats', JSON.stringify(offlineSquats));
+    }
+
+    // Add this new method to calculate streaks for all users
+    calculateUserStreaks(users) {
+        return users.map(user => {
+            let streak = 0;
+            if (user.squats && user.squats.length > 0) {
+                const today = new Date();
+                let checkDate = new Date(today);
+                
+                // Sort squats to ensure chronological order
+                const sortedSquats = [...user.squats].sort();
+                
+                // Count backwards from today to find streak
+                while (sortedSquats.includes(checkDate.toISOString().split('T')[0])) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                }
+            }
+            return {
+                ...user,
+                currentStreak: streak
+            };
+        });
     }
 }
 
