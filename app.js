@@ -6,6 +6,8 @@ class SquatApp {
         this.lastSquatDate = null;
         this.currentStreak = 0;
         this.displayDays = 10;
+
+        this.currentDate = new Date().toISOString().split('T')[0];
         
         // Enable logging in development
         this.debugEnabled = window.location.hostname === 'localhost';
@@ -227,32 +229,6 @@ class SquatApp {
         console.groupEnd();
     }
 
-    async verifyStorageAccess() {
-        const result = { available: false, reason: [] };
-        
-        // Check quota
-        try {
-            const quota = await navigator.storage?.estimate();
-            if (quota && quota.quota - quota.usage < 1024) {
-                result.reason.push('Storage quota full');
-            }
-        } catch (e) {
-            result.reason.push('Cannot check quota');
-        }
-
-        // Check basic access
-        try {
-            const testKey = '__test__';
-            localStorage.setItem(testKey, testKey);
-            localStorage.removeItem(testKey);
-        } catch (e) {
-            result.reason.push('Cannot access localStorage');
-        }
-
-        result.available = result.reason.length === 0;
-        return result;
-    }
-
     showError(message) {
         const errorElement = document.getElementById('username-error');
         errorElement.textContent = message;
@@ -458,7 +434,8 @@ class SquatApp {
         dates.forEach(date => {
             const cell = document.createElement('div');
             cell.className = 'grid-cell date-header';
-            const dateObj = new Date(date);
+            const [year, month, day] = date.split('-').map(Number);
+            const dateObj = new Date(year, month - 1, day);
             
             // Format date as MM/DD
             cell.textContent = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
