@@ -5,6 +5,7 @@ class SquatApp {
         this.ws = null;
         this.lastSquatDate = null;
         this.currentStreak = 0;
+        this.displayDays = 10;
         
         // Enable logging in development
         this.debugEnabled = window.location.hostname === 'localhost';
@@ -416,36 +417,25 @@ class SquatApp {
 
         // Get unique users by userId
         const uniqueUsers = Array.from(new Map(users.map(user => [user.userId, user])).values());
-        console.debug('Unique user IDs:', uniqueUsers.map(u => u.userId));
         
-        // Check if current user exists in the data
-        const currentUserExists = uniqueUsers.some(u => u.userId === this.userId);
-        if (!currentUserExists) {
-            console.warn('🟡 Current user not found in data:', {
-                currentUserId: this.userId,
-                availableIds: uniqueUsers.map(u => u.userId)
-            });
-        }
-
         // Sort users (current user first, then alphabetically by username)
         const sortedUsers = uniqueUsers.sort((a, b) => {
             if (a.userId === this.userId) return -1;
             if (b.userId === this.userId) return 1;
             return a.username.localeCompare(b.username);
         });
-        console.groupEnd();
 
-        // Get last 10 days including today
+        // Get last N days including today, in reverse order (most recent first)
         const today = new Date();
-        const dates = Array.from({length: 10}, (_, i) => {
+        const dates = Array.from({length: this.displayDays}, (_, i) => {
             const date = new Date(today);
-            date.setDate(date.getDate() - (9 - i));
+            date.setDate(date.getDate() - i); // Changed to count backwards from i
             return date.toISOString().split('T')[0];
         });
 
         // Setup grid layout
         const grid = document.getElementById('squat-grid');
-        grid.innerHTML = '';  // Clear all existing content
+        grid.innerHTML = '';
 
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `minmax(100px, auto) repeat(${dates.length}, 1fr)`;
@@ -457,7 +447,7 @@ class SquatApp {
         cornerCell.textContent = `Users (${sortedUsers.length})`;
         grid.appendChild(cornerCell);
 
-        // Add date headers
+        // Add date headers (now in reverse order)
         dates.forEach(date => {
             const cell = document.createElement('div');
             cell.className = 'grid-cell date-header';
@@ -512,7 +502,7 @@ class SquatApp {
             });
         });
 
-        console.debug('🔵 Grid rendered with', sortedUsers.length, 'users');
+        console.groupEnd();
     }
 
     updateStats(stats) {
