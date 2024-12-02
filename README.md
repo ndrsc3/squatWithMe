@@ -24,10 +24,9 @@ A real-time web application for group accountability in daily squats. Built with
 ## 🚀 Getting Started
 
 ### Prerequisites
-
-- Node.js (v14 or higher)
-- npm/yarn
-- Vercel CLI (optional, for deployment)
+1. [GitHub Account](https://github.com)
+2. [Vercel Account](https://vercel.com)
+3. [Node.js](https://nodejs.org) (v18 or higher)
 
 ### Local Development
 
@@ -41,21 +40,50 @@ cd squatWithMe
 ```bash
 npm install
 ```
+3. Create a `.env` file:
+```
+KV_URL=your_kv_url_here
+KV_REST_API_URL=your_kv_rest_api_url_here
+KV_REST_API_TOKEN=your_kv_rest_api_token_here
+KV_REST_API_READ_ONLY_TOKEN=your_kv_read_only_token_here
+```
 
-3. Start the development server:
+4. Start the development server:
 ```bash
 vercel dev
 ```
 
 4. Visit http://localhost:3000 in your browser
 
-### Deployment
+### Deploying to Vercel
 
-The app is configured for easy deployment on Vercel:
+1. **Prepare Your Repository**
+   - Push your code to GitHub
+   - Make sure your repository is public or you have a Vercel Pro account
 
-```bash
-vercel
-```
+2. **Set Up Vercel KV**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Create a new project
+   - Go to Storage tab
+   - Click "Create Database" and select KV
+   - Follow the setup wizard
+   - Copy the provided environment variables
+
+3. **Deploy the Project**
+   - Click "Import Project" in Vercel Dashboard
+   - Select your GitHub repository
+   - Configure project:
+     - Framework Preset: Other
+     - Build Command: `npm run build`
+     - Output Directory: `public`
+   - Add Environment Variables:
+     - Copy all KV environment variables from step 2
+   - Click "Deploy"
+
+4. **Verify Deployment**
+   - Wait for deployment to complete
+   - Click on the deployment URL
+   - Test the application functionality
 
 ## 🔍 Code Structure
 
@@ -113,6 +141,7 @@ Your Name
 - [ ] Add user profiles with progress graphs
 - [ ] Implement incentivization (Smart Contract Integration)
 - [ ] Add Share Button
+- [ ] Custom URL
 
 ---
 Made with ❤️ for the squat community
