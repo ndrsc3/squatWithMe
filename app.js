@@ -1,51 +1,69 @@
 class SquatApp {
+
     constructor() {
+
+        // User Data
+        this.squatData = null;
+
+        // User Info
         this.userId = null;
         this.username = null;
-        this.ws = null;
-        this.lastSquatDate = null;
+        this.currentUser = null;
         this.currentStreak = 0;
-        this.displayDays = 10;
 
-        this.currentDate = new Date().toISOString().split('T')[0];
+        // App Parameters
+        this.displayDays = 10;
+        this.debugEnabled = window.location.hostname === 'localhost'; // Logging Enabled in Development
+
+        // Variables
+        this.squatToday = false;
+        this.todaysDate = new Date();
+        var dd = String(this.todaysDate.getDate()).padStart(2, '0');
+        var mm = String(this.todaysDate.getMonth() + 1).padStart(2, '0'); // January is 0!
+        var yyyy = this.todaysDate.getFullYear();
         
-        // Enable logging in development
-        this.debugEnabled = window.location.hostname === 'localhost';
+        this.today = yyyy + '-' + mm + '-' + dd;
+        this.todaysDate = new Date(this.today);
         
-        console.debug('🔵 [Init] Initializing SquatApp');
+        // Objects
+        this.ws = null;
+
+        // Initialize App
         this.init();
     }
 
     async init() {
         console.debug('🔵 [Init] Starting initialization');
+        
         //this.setupWebSocket();
         this.setupEventListeners();
         
         // Wait for user setup before loading data
-        await this.setupUser();
+        await this.setupLocalUser();
+
         if (this.username) {
             console.debug('🔵 [User] Found user:', this.username);
-            await this.loadInitialData();
+            await this.fetchUserData();
+            this.updateUI(this.squatData.users, this.squatData.stats);
         } else {
             console.debug('🔵 [User] No user found, showing setup screen');
         }
     }
 
-    async setupUser() {
-        console.group('🔵 [User] Setup Process');
+    async setupLocalUser() {
+        console.group('🔵 [User] Setup Local User');
+
         try {
-            // Debug localStorage state
-            console.debug('🔵 [Storage] All localStorage keys:', Object.keys(localStorage));
             
             // Get User Stored Locally
             const storedUser = localStorage.getItem('squatUser');
-            console.debug('🔵 [Storage] Raw stored user data:', storedUser);
             
             if (storedUser) {
                 try {
                     const userData = JSON.parse(storedUser);
-                    console.debug('🔵 [Storage] Parsed user data:', userData);
+                    console.debug('🔵 [Storage] Loaded Local User Data:', userData);
                     
+                    // Check if user data is valid
                     if (!userData.userId || !userData.username) {
                         console.warn('🟡 [Storage] Invalid user data structure:', userData);
                         localStorage.removeItem('squatUser');
@@ -53,23 +71,25 @@ class SquatApp {
                         return;
                     }
                     
+                    // Store user info
                     this.userId   = userData.userId;
                     this.username = userData.username;
                     
-                    console.debug('🔵 [User] Successfully loaded user:', {
-                        userId: this.userId,
-                        username: this.username
-                    });
-                    
+                    // Update UI
                     document.getElementById('main-app').classList.remove('hidden');
                     document.getElementById('current-username').textContent = this.username;
+
                 } catch (parseError) {
                     console.error('🔴 [Storage] JSON parse error:', parseError);
                     localStorage.removeItem('squatUser');
+
+                    // Update UI
                     document.getElementById('user-setup').classList.remove('hidden');
                 }
             } else {
                 console.debug('🔵 [Storage] No stored user found');
+
+                // Update UI
                 document.getElementById('user-setup').classList.remove('hidden');
             }
         } catch (error) {
@@ -79,6 +99,7 @@ class SquatApp {
         console.groupEnd();
     }
 
+    // ToDo:: Handle realtime updates
     setupWebSocket() {
         console.group('🔵 [WebSocket] Setup');
         try {
@@ -136,17 +157,17 @@ class SquatApp {
     }
 
     setupEventListeners() {
-        console.debug('🔵 Setup Event Listeners');
+
+        // Save Button
         const saveButton = document.getElementById('save-username');
         if (saveButton) {
             saveButton.addEventListener('click', () => {
                 console.debug('🔵 [Event] Save username button clicked');
                 this.saveUsername();
             });
-        } else {
-            console.error('🔴 [Event] Save username button not found');
         }
         
+        // Squat Button
         const squatButton = document.getElementById('squat-button');
         if (squatButton) {
             squatButton.addEventListener('click', () => this.recordSquat());
@@ -156,6 +177,7 @@ class SquatApp {
     async saveUsername() {
         console.group('🔵 [User] Save Username Process');
         try {
+            // Elements
             const usernameInput = document.getElementById('username');
             const username = usernameInput.value.trim();
             const errorElement = document.getElementById('username-error');
@@ -221,7 +243,7 @@ class SquatApp {
             document.getElementById('current-username').textContent = this.username;
 
             // Load initial data
-            await this.loadInitialData();
+            await this.fetchUserData();
         } catch (error) {
             console.error('🔴 [User] Error saving username:', error);
             this.showError('Failed to save username. Please try again.');
@@ -229,79 +251,149 @@ class SquatApp {
         console.groupEnd();
     }
 
-    showError(message) {
-        const errorElement = document.getElementById('username-error');
-        errorElement.textContent = message;
-        errorElement.classList.remove('hidden');
-    }
-
-    async loadInitialData() {
-        console.group('🔵 [Data] Loading Initial Data');
+    async fetchUserData() {
+        console.group('🔵 [Data] Fetching Data');
         try {
+            // Get User Data from server
             const response = await fetch('/api/get-users');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
+            this.squatData = await response.json();
             
-            // Update squat button state
-            const today = new Date().toISOString().split('T')[0];
-            const currentUser = data.users.find(u => u.userId === this.userId);
-            const hasSquattedToday = currentUser?.squats?.includes(today) || false;
-            this.updateSquatButtonState(hasSquattedToday);
-            
-            // Calculate user's current streak
-            if (currentUser && currentUser.squats) {
-                const sortedSquats = [...currentUser.squats].sort();
-                let streak = 0;
-                const today = new Date().toISOString().split('T')[0];
-                let checkDate = new Date(today);
-
-                // Count backwards from today to find streak
-                while (sortedSquats.includes(checkDate.toISOString().split('T')[0])) {
-                    streak++;
-                    checkDate.setDate(checkDate.getDate() - 1);
-                }
-
-                data.stats.userStreak = streak;
-            } else {
-                data.stats.userStreak = 0;
-            }
-
-            console.debug('🔵 [Data] Received users:', {
-                count: data.users.length,
-                stats: data.stats
-            });
-
-            // Render Grid
-            this.renderGrid(data.users);
-            this.updateStats(data.stats);
+            // Process and store data
+            this.processUserData(this.squatData);
             
         } catch (error) {
-            console.error('🔴 [Data] Failed to load initial data:', error);
+            console.error('🔴 [Data] Failed to load data:', error);
             this.showError('Failed to load data. Please try again later.');
+        }
+        console.groupEnd();
+    }
+
+    processUserData(data) {
+        // Process users and calculate their streaks
+        const processedUsers = data.users.map(user => {
+            const streak = this.calculateStreak(user.squats || []);
+            return {
+                ...user,
+                currentStreak: streak
+            };
+        });
+
+        // Calculate global stats
+        const stats = {
+            longestStreak: 0,
+            streakHolder: '',
+            userStreaks: {}
+        };
+
+        processedUsers.forEach(user => {
+            // Store user's streak
+            stats.userStreaks[user.userId] = user.currentStreak;
+            
+            // Update longest streak if necessary
+            if (user.currentStreak > stats.longestStreak) {
+                stats.longestStreak = user.currentStreak;
+                stats.streakHolder = user.username;
+            }
+        });
+
+        // Store everything back in squatData
+        this.squatData = {
+            users: processedUsers,
+            stats: stats
+        };
+
+        // Update current user reference
+        this.currentUser = processedUsers.find(u => u.userId === this.userId);
+        this.squatToday = this.currentUser?.squats?.includes(this.today) || false;
+        
+        // Trigger UI update
+        this.updateUI();
+    }
+
+    calculateStreak(squats) {
+        if (!squats || squats.length === 0) return 0;
+        
+        let streak = 0;
+        let checkDate = new Date(this.today);
+        
+        // Sort squats to ensure chronological order
+        const sortedSquats = [...squats].sort();
+        
+        // Count backwards from today to find streak
+        while (sortedSquats.includes(checkDate.toISOString().split('T')[0])) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+        
+        return streak;
+    }
+
+    calculateGlobalStats(users) {
+        const stats = {
+            longestStreak: 0,
+            streakHolder: '',
+            userStreaks: {}
+        };
+
+        users.forEach(user => {
+            // Store user's streak
+            stats.userStreaks[user.userId] = user.currentStreak;
+            
+            // Update longest streak if necessary
+            if (user.currentStreak > stats.longestStreak) {
+                stats.longestStreak = user.currentStreak;
+                stats.streakHolder = user.username;
+            }
+        });
+
+        return stats;
+    }
+
+    updateUI() {
+        console.group('🔵 [UI] Updating Interface');
+        try {
+            // Verify we have data to work with
+            if (!this.squatData) {
+                console.warn('🟡 [UI] No data available for UI update');
+                return;
+            }
+
+            // Update squat button state based on today's status
+            this.updateSquatButtonState(this.squatToday);
+
+            // Update stats display
+            this.updateUIStats(this.squatData.stats);
+
+            // Render the grid with current data
+            this.renderGrid();
+
+            console.debug('🔵 [UI] Update complete', {
+                squatToday: this.squatToday,
+                stats: this.squatData.stats,
+                userCount: this.squatData.users.length
+            });
+        } catch (error) {
+            console.error('🔴 [UI] Error updating interface:', error);
+            this.showError('Something went wrong updating the display');
         }
         console.groupEnd();
     }
 
     async recordSquat() {
         console.group('🔵 [Squat] Recording Squat');
-        const today = new Date().toISOString().split('T')[0];
+
+        // Get Elements
         const squatButton = document.getElementById('squat-button');
         const squatStatus = document.getElementById('squat-status');
 
         try {
-            // Check if already squatted today
-            if (this.lastSquatDate === today) {
-                console.debug('🔵 [Squat] Already recorded for today');
-                this.updateSquatButtonState(true);
-                return;
-            }
-
             const response = await fetch('/api/record-squat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: this.userId,
-                    date: today
+                    date: this.today
                 })
             });
 
@@ -310,16 +402,18 @@ class SquatApp {
             }
 
             console.debug('🔵 [Squat] Successfully recorded');
-            this.lastSquatDate = today;
+            this.squatToday = true;
             this.updateSquatButtonState(true);
             
-            // Reload data to update UI
-            await this.loadInitialData();
+            // Update UI
+            await this.fetchUserData();
+
         } catch (error) {
             console.error('🔴 [Squat] Failed to record:', error);
+            
             // Store offline
             const offlineSquats = JSON.parse(localStorage.getItem('offlineSquats') || '[]');
-            offlineSquats.push({ date: today, synced: false });
+            offlineSquats.push({ date: this.today, synced: false });
             localStorage.setItem('offlineSquats', JSON.stringify(offlineSquats));
             
             this.showError('Failed to record squat. It will sync when you\'re back online.');
@@ -343,69 +437,98 @@ class SquatApp {
     }
 
     handleWebSocketMessage(data) {
-        switch (data.type) {
-            case 'update':
-                this.updateUI(data.users, data.stats);
-                break;
-            case 'userRemoved':
-                this.handleUserRemoval(data.userId);
-                break;
-            default:
-                console.warn('Unknown message type:', data.type);
+        console.group('🔵 [WebSocket] Handling Message');
+        try {
+            switch (data.type) {
+                case 'update':
+                    console.debug('🔵 [WebSocket] Received data update');
+                    this.squatData = data;
+                    this.processUserData(this.squatData);
+                    break;
+                case 'userRemoved':
+                    console.debug('🔵 [WebSocket] User removal notification');
+                    this.handleUserRemoval(data.userId);
+                    break;
+                default:
+                    console.warn('🟡 [WebSocket] Unknown message type:', data.type);
+            }
+        } catch (error) {
+            console.error('🔴 [WebSocket] Error handling message:', error);
         }
+        console.groupEnd();
     }
 
-    updateUI(users, stats) {
-        console.debug('🔵 Update UI');
-        // Update the UI with new data
-        if (stats) {
-            document.getElementById('longest-streak').textContent = stats.longestStreak;
-            document.getElementById('streak-holder').textContent = stats.streakHolder;
-        }
+    updateUIStats(stats) {
+        console.debug('🔵 [UI] Updating Stats Display');
         
-        // Update user-specific data
-        const currentUser = users.find(u => u.userId === this.userId);
-        if (currentUser) {
-            document.getElementById('user-streak').textContent = this.calculateCurrentStreak(currentUser.squats);
+        // Get all stat elements
+        const elements = {
+            userStreak: document.getElementById('user-streak'),
+            longestStreak: document.getElementById('longest-streak'),
+            streakHolder: document.getElementById('streak-holder')
+        };
+
+        try {
+            // Update user's current streak
+            if (elements.userStreak) {
+                const userStreak = stats.userStreaks?.[this.userId] || 0;
+                elements.userStreak.textContent = userStreak;
+            }
+
+            // Update longest streak (if element exists)
+            if (elements.longestStreak) {
+                elements.longestStreak.textContent = stats.longestStreak || 0;
+            }
+
+            // Update streak holder (if element exists)
+            if (elements.streakHolder) {
+                elements.streakHolder.textContent = stats.streakHolder || '-';
+            }
+        } catch (error) {
+            console.error('🔴 [UI] Error updating stats:', error);
         }
-        
-        // Update the grid if it exists
-        this.updateGrid(users);
     }
 
     handleUserRemoval(userId) {
-        console.debug('🔵 Handle User Removal');
-        if (userId === this.userId) {
-            // Current user was removed, show appropriate message
-            this.showError('Your account has been deactivated due to inactivity');
-            localStorage.removeItem('squatUser');
-            this.showLoginForm();
-        } else {
-            // Other user was removed, just update the UI
-            this.loadInitialData();
+        console.group('🔵 [User] Handling User Removal');
+        try {
+            if (userId === this.userId) {
+                console.debug('🔵 [User] Current user removed');
+                this.showError('Your account has been deactivated due to inactivity');
+                localStorage.removeItem('squatUser');
+                document.getElementById('user-setup').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('hidden');
+                
+                // Clear app state
+                this.squatData = null;
+                this.userId = null;
+                this.username = null;
+            } else {
+                console.debug('🔵 [User] Other user removed, refreshing data');
+                // Refresh data from server
+                this.fetchUserData();
+            }
+        } catch (error) {
+            console.error('🔴 [User] Error handling user removal:', error);
         }
+        console.groupEnd();
     }
 
-    renderGrid(users) {
+    renderGrid() {
         console.group('🔵 Grid Rendering');
         
-        // Calculate streaks for all users
-        const usersWithStreaks = this.calculateUserStreaks(users);
-        
-        // Get unique users by userId
-        const uniqueUsers = Array.from(new Map(usersWithStreaks.map(user => [user.userId, user])).values());
-        
-        // Sort users (current user first, then alphabetically by username)
-        const sortedUsers = uniqueUsers.sort((a, b) => {
+        // Get unique users by userId and sort them
+        const sortedUsers = Array.from(
+            new Map(this.squatData.users.map(user => [user.userId, user])).values()
+        ).sort((a, b) => {
             if (a.userId === this.userId) return -1;
             if (b.userId === this.userId) return 1;
             return a.username.localeCompare(b.username);
         });
 
         // Get last N days including today, in reverse order (most recent first)
-        const today = new Date();
         const dates = Array.from({length: this.displayDays}, (_, i) => {
-            const date = new Date(today);
+            const date = new Date(this.today);
             date.setDate(date.getDate() - i);
             return date.toISOString().split('T')[0];
         });
@@ -441,15 +564,14 @@ class SquatApp {
             cell.textContent = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
             
             // Highlight today's column
-            if (date === today.toISOString().split('T')[0]) {
+            if (date === this.todaysDate.toISOString().split('T')[0]) {
                 cell.classList.add('today');
             }
             
             // Add day of week below date
-            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
             const daySpan = document.createElement('span');
             daySpan.className = 'day-of-week';
-            daySpan.textContent = dayOfWeek;
+            daySpan.textContent = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
             cell.appendChild(daySpan);
             
             grid.appendChild(cell);
@@ -488,7 +610,7 @@ class SquatApp {
                 }
                 
                 // Highlight today's column
-                if (date === today.toISOString().split('T')[0]) {
+                if (date === this.todaysDate.toISOString().split('T')[0]) {
                     cell.classList.add('today');
                 }
                 
@@ -499,15 +621,8 @@ class SquatApp {
         console.groupEnd();
     }
 
-    updateStats(stats) {
-        console.debug('🔵 Update Stats');
-        document.getElementById('user-streak').textContent = stats.userStreak || 0;
-        //document.getElementById('longest-streak').textContent = stats.longestStreak || 0;
-        //document.getElementById('streak-holder').textContent = stats.streakHolder || '-';
-    }
-
     // Offline sync handling
-        async syncOfflineSquats() {
+    async syncOfflineSquats() {
         console.debug('🔵 Sync Offline Squats');
         const offlineSquats = JSON.parse(localStorage.getItem('offlineSquats') || '[]');
         const unsyncedSquats = offlineSquats.filter(squat => !squat.synced);
@@ -532,13 +647,12 @@ class SquatApp {
         localStorage.setItem('offlineSquats', JSON.stringify(offlineSquats));
     }
 
-    // Add this new method to calculate streaks for all users
+    // Method to calculate streaks for all users
     calculateUserStreaks(users) {
         return users.map(user => {
             let streak = 0;
             if (user.squats && user.squats.length > 0) {
-                const today = new Date();
-                let checkDate = new Date(today);
+                let checkDate = new Date(this.todaysDate);
                 
                 // Sort squats to ensure chronological order
                 const sortedSquats = [...user.squats].sort();
@@ -554,6 +668,12 @@ class SquatApp {
                 currentStreak: streak
             };
         });
+    }
+
+    showError(message) {
+        const errorElement = document.getElementById('username-error');
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
     }
 }
 
