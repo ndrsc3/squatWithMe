@@ -27,52 +27,12 @@ export default async function handler(req, res) {
             const lastActive = new Date(user.lastActive).getTime();
             return Date.now() - lastActive <= 30 * 24 * 60 * 60 * 1000;
         });
-
-        const stats = await calculateStats(activeUsers);
         
         console.groupEnd();
-        res.status(200).json({ users: activeUsers, stats });
+        res.status(200).json({ users: activeUsers });
     } catch (error) {
         console.error('🔴 [API] Error fetching users:', error);
         console.groupEnd();
         res.status(500).json({ error: 'Failed to fetch users' });
     }
-}
-
-async function calculateStats(users) {
-    let longestStreak = 0;
-    let streakHolder = '';
-    
-    for (const user of users) {
-        const dates = user.squats.sort();
-        let currentStreak = 0;
-        let maxStreak = 0;
-        
-        // Calculate streaks
-        for (let i = 0; i < dates.length; i++) {
-            const currentDate = new Date(dates[i]);
-            const nextDate = new Date(dates[i + 1]);
-            
-            if (i === 0 || isConsecutiveDay(new Date(dates[i - 1]), currentDate)) {
-                currentStreak++;
-            } else {
-                currentStreak = 1;
-            }
-            
-            maxStreak = Math.max(maxStreak, currentStreak);
-        }
-        
-        if (maxStreak > longestStreak) {
-            longestStreak = maxStreak;
-            streakHolder = user.username;
-        }
-    }
-    
-    return { longestStreak, streakHolder };
-}
-
-function isConsecutiveDay(date1, date2) {
-    const oneDayMs = 24 * 60 * 60 * 1000;
-    const diffDays = Math.round(Math.abs((date2 - date1) / oneDayMs));
-    return diffDays === 1;
 } 
