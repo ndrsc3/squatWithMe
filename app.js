@@ -295,9 +295,7 @@ class SquatApp {
             longestStreak: 0,
             streakHolder: '',
             userStreaks: {},
-            activeToday: processedUsers.filter(user => 
-                user.squats && user.squats.includes(this.today)
-            ).length
+            activeToday: processedUsers.filter(user => user.currentStreak > 1).length
         };
 
         processedUsers.forEach(user => {
@@ -334,7 +332,12 @@ class SquatApp {
         // Sort squats to ensure chronological order
         const sortedSquats = [...squats].sort();
         
-        // Count backwards from today to find streak
+        // If they haven't squatted today, start checking from yesterday
+        if (!sortedSquats.includes(this.today)) {
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+        
+        // Count backwards from checkDate to find streak
         while (sortedSquats.includes(checkDate.toISOString().split('T')[0])) {
             streak++;
             checkDate.setDate(checkDate.getDate() - 1);
@@ -441,7 +444,7 @@ class SquatApp {
         
         if (hasSquatted) {
             squatButton.classList.add('hidden');
-            squatStatus.textContent = "You've already done your squat today! 💪";
+            squatStatus.textContent = "You've already done 100 squats today! 💪";
             squatStatus.classList.remove('hidden');
         } else {
             squatButton.classList.remove('hidden');
