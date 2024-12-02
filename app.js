@@ -283,7 +283,10 @@ class SquatApp {
         const stats = {
             longestStreak: 0,
             streakHolder: '',
-            userStreaks: {}
+            userStreaks: {},
+            activeToday: processedUsers.filter(user => 
+                user.squats && user.squats.includes(this.today)
+            ).length
         };
 
         processedUsers.forEach(user => {
@@ -464,6 +467,7 @@ class SquatApp {
         // Get all stat elements
         const elements = {
             userStreak: document.getElementById('user-streak'),
+            activeUsers: document.getElementById('active-users'),
             longestStreak: document.getElementById('longest-streak'),
             streakHolder: document.getElementById('streak-holder')
         };
@@ -483,6 +487,11 @@ class SquatApp {
             // Update streak holder (if element exists)
             if (elements.streakHolder) {
                 elements.streakHolder.textContent = stats.streakHolder || '-';
+            }
+                
+            // Update active users count
+            if (elements.activeUsers) {
+                elements.activeUsers.textContent = stats.activeToday || 0;
             }
         } catch (error) {
             console.error('🔴 [UI] Error updating stats:', error);

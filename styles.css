@@ -173,7 +173,7 @@ h1 {
 
 #user-setup {
     text-align: center;
-    margin-top: 100px;
+    padding: 2rem;
 }
 
 #username {
@@ -293,4 +293,13 @@ h1 {
 .footer-text {
     color: #666;
     font-size: 0.9em;
+    text-align: center;
+}
+
+.setup-image {
+    max-width: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto 2rem auto;
+    border-radius: 8px;
 }
