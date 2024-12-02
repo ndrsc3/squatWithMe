@@ -37,9 +37,14 @@ class SquatApp {
         
         //this.setupWebSocket();
         this.setupEventListeners();
+
+        // Load saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.classList.toggle('light-theme', savedTheme === 'light');
         
         // Wait for user setup before loading data
         await this.setupLocalUser();
+
 
         if (this.username) {
             console.debug('🔵 [User] Found user:', this.username);
@@ -171,6 +176,12 @@ class SquatApp {
         const squatButton = document.getElementById('squat-button');
         if (squatButton) {
             squatButton.addEventListener('click', () => this.recordSquat());
+        }
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => this.toggleTheme());
         }
     }
 
@@ -683,6 +694,12 @@ class SquatApp {
         const errorElement = document.getElementById('username-error');
         errorElement.textContent = message;
         errorElement.classList.remove('hidden');
+    }
+
+    toggleTheme() {
+        const root = document.documentElement;
+        const isLightTheme = root.classList.toggle('light-theme');
+        localStorage.setItem('theme', isLightTheme ? 'light' : 'dark');
     }
 }
 
