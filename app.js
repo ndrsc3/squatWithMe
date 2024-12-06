@@ -162,13 +162,24 @@ class SquatApp {
     }
 
     setupEventListeners() {
-
         // Save Button
         const saveButton = document.getElementById('save-username');
         if (saveButton) {
             saveButton.addEventListener('click', () => {
                 console.debug('🔵 [Event] Save username button clicked');
                 this.saveUsername();
+            });
+        }
+        
+        // Username Input - Enter Key
+        const usernameInput = document.getElementById('username');
+        if (usernameInput) {
+            usernameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    console.debug('🔵 [Event] Enter key pressed on username input');
+                    this.saveUsername();
+                }
             });
         }
         
@@ -540,12 +551,20 @@ class SquatApp {
     renderGrid() {
         console.group('🔵 Grid Rendering');
         
-        // Get unique users by userId and sort them
+        // Get unique users by userId and sort them by streak
         const sortedUsers = Array.from(
             new Map(this.squatData.users.map(user => [user.userId, user])).values()
         ).sort((a, b) => {
+            // Always put current user first
             if (a.userId === this.userId) return -1;
             if (b.userId === this.userId) return 1;
+            
+            // Then sort by streak (highest to lowest)
+            if (a.currentStreak !== b.currentStreak) {
+                return b.currentStreak - a.currentStreak;
+            }
+            
+            // If streaks are equal, sort alphabetically
             return a.username.localeCompare(b.username);
         });
 
