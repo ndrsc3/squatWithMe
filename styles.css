@@ -89,14 +89,15 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-align: center;
 }
 
 header {
     position: relative;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 30px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -104,6 +105,7 @@ header {
 .header-content {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 5px;
 }
 
@@ -138,18 +140,24 @@ h1 {
 }
 
 #stats {
-    margin-bottom: 30px;
+    margin: 0 auto 30px auto;
     font-size: 1.1em;
-    padding: 15px;
+    padding: 0 15px 15px 15px;
     background: var(--surface-color);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 600px;
 }
 
 .stats-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    gap: 5px;
+}
+
+.stats-list h2 {
+    padding: 0px 0;
 }
 
 .stats-item {
@@ -170,6 +178,7 @@ h1 {
     overflow-x: auto;
     margin-top: 20px;
     padding: 20px 0;
+    text-align: center;
 }
 
 #squat-grid {
@@ -178,7 +187,8 @@ h1 {
     background-color: var(--grid-bg-color);
     padding: 10px;
     border-radius: 8px;
-    margin-top: 20px;
+    margin: 20px auto;
+    max-width: fit-content;
 }
 
 .grid-cell {
@@ -205,10 +215,9 @@ h1 {
 }
 
 .user-name {
-    text-align: left;
-    justify-content: flex-start;
-    padding-left: 15px;
-    font-weight: bold;
+    text-align: center;
+    justify-content: center;
+    padding-left: 0;
 }
 
 .current-user {
@@ -337,6 +346,9 @@ h1 {
     font-size: 0.9em;
     color: #666;
     font-style: italic;
+    text-align: center;
+    width: 100%;
+    margin: 10px 0;
 }
 
 #subtitle {
@@ -395,4 +407,33 @@ h1 {
     display: block;
     margin: 0 auto 2rem auto;
     border-radius: 8px;
+}
+
+#app-description {
+    max-width: 800px;
+    margin: 0 auto 10px auto;
+    padding: 10px 20px 20px 20px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+#app-description h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#app-description p {
+    margin: 15px 0;
+    line-height: 1.6;
+    font-size: 1.1em;
+}
+
+.description-highlight {
+    font-style: italic;
+    color: var(--primary-color);
+    font-weight: 500;
+    font-size: 0.8em !important;
+    margin-top: 25px !important;
 }
