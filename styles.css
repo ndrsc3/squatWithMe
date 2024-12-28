@@ -156,6 +156,7 @@ h1 {
 
 #stats {
     /* margin: 0 auto 30px auto; */
+    margin: 0 auto;
     font-size: 1.1em;
     padding: 0 15px 10px 15px;
     background: var(--surface-color);
@@ -169,6 +170,8 @@ h1 {
     flex-direction: column;
     align-items: center;
     gap: 5px;
+    /* width: 100%;
+    margin: 0 auto; */
 }
 
 .stats-list h2 {
@@ -573,5 +576,42 @@ h1 {
 #grid-container h2 {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+/* Add smooth scrolling behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Add loading state styles */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Add transition effects */
+.grid-cell, #squat-button, .theme-toggle {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Add touch feedback */
+@media (hover: none) {
+    .grid-cell:active {
+        transform: scale(0.95);
+    }
+    
+    #squat-button:active {
+        transform: scale(0.98);
+    }
+}
+
+/* Improve mobile grid scrolling */
+#grid-container {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+#grid-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
 }
 

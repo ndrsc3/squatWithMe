@@ -274,9 +274,19 @@ class SquatApp {
     }
 
     async fetchUserData() {
-        console.group('🔵 [Data] Fetching Data');
         try {
-            // Get User Data from server
+            // Fetch Cached Data
+            const cachedData = localStorage.getItem('squatData');
+            if (cachedData) {
+                const { data, timestamp } = JSON.parse(cachedData);
+                // Use cached data if less than 5 minutes old
+                if (Date.now() - timestamp < 300000) {
+                    this.squatData = data;
+                    this.processUserData(data);
+                }
+            }
+            
+            // Fetch fresh data
             const response = await fetch('/api/get-users');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.squatData = await response.json();
@@ -284,11 +294,15 @@ class SquatApp {
             // Process and store data
             this.processUserData(this.squatData);
             
+            // Cache the new data
+            localStorage.setItem('squatData', JSON.stringify({
+                data: this.squatData,
+                timestamp: Date.now()
+            }));
         } catch (error) {
             console.error('🔴 [Data] Failed to load data:', error);
             this.showError('Failed to load data. Please try again later.');
         }
-        console.groupEnd();
     }
 
     processUserData(data) {
@@ -415,7 +429,8 @@ class SquatApp {
         const squatButton = document.getElementById('squat-button');
         const squatStatus = document.getElementById('squat-status');
 
-        try {
+        try { 
+            squatButton.classList.add('loading');
             const response = await fetch('/api/record-squat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -425,8 +440,18 @@ class SquatApp {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            this.squatToday = true;
+            this.updateSquatButtonState(true);
+            
+            // Update UI
+            await this.fetchUserData();
+        } 
+        catch (error) {
+            // More specific error messages
+            if (error.name === 'TypeError') {
+                this.showError('Network error. Please check your connection.');
+            } else {
+                this.showError('Failed to record squat: ' + error.message);
             }
 
             console.debug('🔵 [Squat] Successfully recorded');
@@ -435,18 +460,10 @@ class SquatApp {
             
             // Update UI
             await this.fetchUserData();
-
-        } catch (error) {
-            console.error('🔴 [Squat] Failed to record:', error);
-            
-            // Store offline
-            const offlineSquats = JSON.parse(localStorage.getItem('offlineSquats') || '[]');
-            offlineSquats.push({ date: this.today, synced: false });
-            localStorage.setItem('offlineSquats', JSON.stringify(offlineSquats));
-            
-            this.showError('Failed to record squat. It will sync when you\'re back online.');
         }
-        console.groupEnd();
+        finally {
+            squatButton.classList.remove('loading');
+        }
     }
 
     updateSquatButtonState(hasSquatted) {
@@ -722,6 +739,15 @@ class SquatApp {
         const root = document.documentElement;
         const isLightTheme = root.classList.toggle('light-theme');
         localStorage.setItem('theme', isLightTheme ? 'light' : 'dark');
+    }
+
+    // Add a toast notification system
+    showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
 }
 
