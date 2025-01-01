@@ -17,13 +17,33 @@
         <div id="user-setup" class="hidden">
             <img src="/assets/images/squat.png" alt="Squat With Me" class="setup-image">
             <h2>Welcome to Squat With Me!</h2>
-            <p>Everybody loves big butts but its hard to squat without a lil' support from your friends. </p>
-            <p>I want a big butt and I want you to have one too.</p>
-            <p>I'm committing to 100 squats a day.</p> 
-            <p>Join the committment!</p>
-            <input type="text" id="username" placeholder="Choose your username">
-            <button id="save-username">Start Squatting</button>
-            <p id="username-error" class="error hidden"></p>
+            <div id="user-setup-form">
+                <p>Everybody loves big butts but its hard to squat without a lil' support from your friends. </p>
+                <p>I want a big butt and I want you to have one too.</p>
+                <p>I'm committing to 100 squats a day.</p> 
+                <p>Join the committment!</p>
+                <input type="text" id="username" placeholder="Choose your username">
+                <button id="save-username">Start Squatting</button>
+                <p id="username-error" class="error hidden"></p>
+                <p class="recovery-link">Already have an account? <a href="#" id="show-recovery">Recover it here</a></p>
+            </div>
+
+            <div id="recovery-code-display" class="hidden">
+                <!-- Recovery code will be displayed here -->
+            </div>
+
+            <div id="account-recovery" class="hidden">
+                <h3>Recover Your Account</h3>
+                <p>Enter your username to recover your account.</p>
+                <input type="text" id="recovery-username" placeholder="Your username">
+                <div id="recovery-code-container" class="hidden">
+                    <p id="recovery-question" class="fun-question">If you could shoot a liquid out of your index finger, what would it be?</p>
+                    <input type="text" id="recovery-answer" placeholder="Your answer...">
+                </div>
+                <button id="recover-account">Recover Account</button>
+                <p id="recovery-error" class="error hidden"></p>
+                <p class="recovery-link"><a href="#" id="show-signup">Back to signup</a></p>
+            </div>
         </div>
 
         <div id="main-app" class="hidden">

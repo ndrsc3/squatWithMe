@@ -10,6 +10,7 @@ class SquatApp {
         this.username = null;
         this.currentUser = null;
         this.currentStreak = 0;
+        this.deviceId = null;
 
         // App Parameters
         this.displayDays = 12;
@@ -29,6 +30,9 @@ class SquatApp {
         
         // Objects
         this.ws = null;
+
+        // Generate or retrieve device ID
+        this.initializeDeviceId();
 
         // Initialize App
         this.init();
@@ -196,6 +200,35 @@ class SquatApp {
         if (themeToggle) {
             themeToggle.addEventListener('click', () => this.toggleTheme());
         }
+
+        // Recovery interface event listeners
+        document.getElementById('show-recovery').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('user-setup-form').classList.add('hidden');
+            document.getElementById('account-recovery').classList.remove('hidden');
+        });
+
+        document.getElementById('show-signup').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('account-recovery').classList.add('hidden');
+            document.getElementById('user-setup-form').classList.remove('hidden');
+        });
+
+        document.getElementById('recover-account').addEventListener('click', () => this.recoverAccount());
+
+        // Clear error messages when inputs change
+        document.getElementById('username').addEventListener('input', () => {
+            document.getElementById('username-error').classList.add('hidden');
+            document.getElementById('username').classList.remove('error');
+        });
+
+        document.getElementById('recovery-username').addEventListener('input', () => {
+            document.getElementById('recovery-error').classList.add('hidden');
+        });
+
+        document.getElementById('recovery-answer').addEventListener('input', () => {
+            document.getElementById('recovery-error').classList.add('hidden');
+        });
     }
 
     async saveUsername() {
@@ -232,23 +265,73 @@ class SquatApp {
                 this.userId = crypto.randomUUID();
             }
 
-            // Save user
+            // Get device information
+            const deviceFingerprint = await this.generateDeviceFingerprint();
+
+            // Show recovery question and get answer
+            document.getElementById('user-setup-form').classList.add('hidden');
+            const recoveryMessage = `
+                <div class="recovery-code-container">
+                    <h3>🤔 One Last Fun Question</h3>
+                    <p>If you could shoot a liquid out of your index finger, what would it be?</p>
+                    <input type="text" id="recovery-answer" placeholder="Your answer..." class="recovery-input">
+                    <p class="recovery-warning">Remember your answer! You'll need it if you want to recover your account on a new device.</p>
+                    <button id="confirm-recovery" class="primary-button">Save My Answer</button>
+                    <p id="recovery-error" class="error hidden"></p>
+                </div>
+            `;
+            const recoveryDisplay = document.getElementById('recovery-code-display');
+            if (!recoveryDisplay) {
+                throw new Error('Recovery display element not found');
+            }
+            recoveryDisplay.innerHTML = recoveryMessage;
+            recoveryDisplay.classList.remove('hidden');
+
+            // Wait for user to answer
+            const recoveryAnswer = await new Promise((resolve, reject) => {
+                const confirmButton = document.getElementById('confirm-recovery');
+                if (!confirmButton) {
+                    reject(new Error('Confirm button not found'));
+                    return;
+                }
+
+                const handleClick = () => {
+                    const answerInput = document.getElementById('recovery-answer');
+                    if (!answerInput) {
+                        reject(new Error('Answer input not found'));
+                        return;
+                    }
+
+                    const answer = answerInput.value.trim();
+                    if (!answer) {
+                        const recoveryError = document.getElementById('recovery-error');
+                        if (recoveryError) {
+                            recoveryError.textContent = 'Please enter an answer';
+                            recoveryError.classList.remove('hidden');
+                        }
+                        return;
+                    }
+
+                    // Clean up event listener
+                    confirmButton.removeEventListener('click', handleClick);
+                    resolve(answer);
+                };
+
+                confirmButton.addEventListener('click', handleClick);
+            });
+
+            // Save user with recovery answer
             const saveResponse = await fetch('/api/save-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: this.userId,
-                    username
+                    username,
+                    deviceId: this.deviceId,
+                    deviceFingerprint,
+                    recoveryAnswer
                 })
             });
-
-            if (saveResponse.status === 409) {
-                console.warn('🟡 [User] Username taken:', username);
-                errorElement.textContent = 'Username already taken';
-                errorElement.classList.remove('hidden');
-                usernameInput.classList.add('error');
-                return;
-            }
 
             if (!saveResponse.ok) {
                 throw new Error(`HTTP error! status: ${saveResponse.status}`);
@@ -262,6 +345,10 @@ class SquatApp {
             }));
 
             // Update UI
+            const recoveryCodeDisplay = document.getElementById('recovery-code-display');
+            if (recoveryCodeDisplay) {
+                recoveryCodeDisplay.classList.add('hidden');
+            }
             document.getElementById('user-setup').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('current-username').textContent = this.username;
@@ -271,6 +358,79 @@ class SquatApp {
         } catch (error) {
             console.error('🔴 [User] Error saving username:', error);
             this.showError('Failed to save username. Please try again.');
+            // Reset UI state on error
+            const userSetupForm = document.getElementById('user-setup-form');
+            const recoveryCodeDisplay = document.getElementById('recovery-code-display');
+            if (userSetupForm && recoveryCodeDisplay) {
+                userSetupForm.classList.remove('hidden');
+                recoveryCodeDisplay.classList.add('hidden');
+            }
+        }
+        console.groupEnd();
+    }
+
+    async recoverAccount() {
+        console.group('🔵 [User] Account Recovery Process');
+        try {
+            const username = document.getElementById('recovery-username').value.trim();
+            const recoveryAnswer = document.getElementById('recovery-answer')?.value.trim();
+            const errorElement = document.getElementById('recovery-error');
+
+            if (!username) {
+                this.showError('Please enter your username', 'recovery-error');
+                return;
+            }
+
+            // Get device information
+            const deviceFingerprint = await this.generateDeviceFingerprint();
+
+            // Try to recover without answer first (for known devices)
+            const response = await fetch('/api/recover-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username, 
+                    recoveryAnswer,
+                    deviceId: this.deviceId,
+                    deviceFingerprint
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 401 && !recoveryAnswer) {
+                    // Show recovery question if needed
+                    document.getElementById('recovery-code-container').classList.remove('hidden');
+                    document.getElementById('recovery-question').textContent = 
+                        'If you could shoot a liquid out of your index finger, what would it be?';
+                    this.showError('Please answer the recovery question', 'recovery-error');
+                    return;
+                }
+                this.showError(result.error || 'Recovery failed', 'recovery-error');
+                return;
+            }
+
+            // Update local storage with recovered account
+            this.userId = result.userId;
+            this.username = result.username;
+            localStorage.setItem('squatUser', JSON.stringify({
+                userId: this.userId,
+                username: this.username
+            }));
+
+            // Update UI
+            document.getElementById('user-setup').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('current-username').textContent = this.username;
+
+            // Load user data
+            await this.fetchUserData();
+            
+            console.debug('🔵 [User] Account recovered successfully');
+        } catch (error) {
+            console.error('🔴 [User] Error recovering account:', error);
+            this.showError('Failed to recover account. Please try again.', 'recovery-error');
         }
         console.groupEnd();
     }
@@ -753,8 +913,8 @@ class SquatApp {
         });
     }
 
-    showError(message) {
-        const errorElement = document.getElementById('username-error');
+    showError(message, elementId = 'username-error') {
+        const errorElement = document.getElementById(elementId);
         errorElement.textContent = message;
         errorElement.classList.remove('hidden');
     }
@@ -772,6 +932,44 @@ class SquatApp {
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
+    }
+
+    async initializeDeviceId() {
+        // Try to get existing device ID from localStorage
+        let storedDeviceId = localStorage.getItem('deviceId');
+        
+        if (!storedDeviceId) {
+            // Generate device fingerprint
+            const fingerprint = await this.generateDeviceFingerprint();
+            // Create a UUID based on the fingerprint
+            storedDeviceId = crypto.randomUUID();
+            // Store both values
+            localStorage.setItem('deviceId', storedDeviceId);
+            localStorage.setItem('deviceFingerprint', fingerprint);
+        }
+        
+        this.deviceId = storedDeviceId;
+    }
+
+    async generateDeviceFingerprint() {
+        const components = [
+            navigator.userAgent,
+            navigator.language,
+            navigator.hardwareConcurrency,
+            navigator.deviceMemory,
+            screen.colorDepth,
+            screen.width + 'x' + screen.height,
+            new Date().getTimezoneOffset(),
+            navigator.platform,
+            navigator.vendor
+        ].join('|');
+
+        // Create a hash of the components
+        const encoder = new TextEncoder();
+        const data = encoder.encode(components);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 }
 

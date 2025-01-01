@@ -1,4 +1,11 @@
 import { kv } from '@vercel/kv';
+import crypto from 'crypto';
+
+function hashAnswer(answer) {
+    // Normalize the answer (lowercase, trim whitespace)
+    const normalizedAnswer = answer.toLowerCase().trim();
+    return crypto.createHash('sha256').update(normalizedAnswer).digest('hex');
+}
 
 export default async function handler(req, res) {
     console.group('🔵 [API] Save User');
@@ -8,7 +15,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { userId, username } = req.body;
+    const { userId, username, deviceId, deviceFingerprint, recoveryAnswer } = req.body;
     
     try {
         // Check if username exists in index
@@ -19,12 +26,22 @@ export default async function handler(req, res) {
             return res.status(409).json({ error: 'Username already taken' });
         }
 
+        // Hash the recovery answer
+        const hashedAnswer = hashAnswer(recoveryAnswer);
+
         // Create user metadata
         const userData = {
             userId,
             username,
             lastActive: new Date(),
-            joinDate: new Date()
+            joinDate: new Date(),
+            recoveryHash: hashedAnswer,
+            devices: [{
+                deviceId,
+                fingerprint: deviceFingerprint,
+                lastUsed: new Date(),
+                trusted: true
+            }]
         };
 
         // Get current active users
