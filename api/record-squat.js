@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     console.debug('🔵 [API] Recording squat:', { userId, date });
 
     try {
-        // Get user data
+        // Get user data to verify user exists
         console.debug('🔵 [API] Fetching user data for:', userId);
         const userData = await kv.get(`user:${userId}`);
         if (!userData) {
@@ -20,47 +20,29 @@ export default async function handler(req, res) {
             console.groupEnd();
             return res.status(404).json({ error: 'User not found' });
         }
-        console.debug('🔵 [API] Found user:', {
-            username: userData.username,
-            currentSquats: userData.squats.length
+
+        // Parse date and create monthly key
+        const squatDate = new Date(date);
+        const monthKey = `${squatDate.getFullYear()}-${String(squatDate.getMonth() + 1).padStart(2, '0')}`;
+        const dayOfMonth = String(squatDate.getDate()).padStart(2, '0');
+        const monthlySquatsKey = `squats:${monthKey}:${userId}`;
+
+        // Add squat to monthly set and update user's lastActive
+        const pipeline = kv.pipeline();
+        pipeline.sadd(monthlySquatsKey, dayOfMonth);
+        pipeline.set(`user:${userId}`, {
+            ...userData,
+            lastActive: new Date()
         });
+        pipeline.sadd('activeUsers', userId);
+        await pipeline.exec();
 
-        // Update user data
-        const isDuplicate = userData.squats.includes(date);
-        if (isDuplicate) {
-            console.debug('🔵 [API] Squat already recorded for date:', date);
-        } else {
-            console.debug('🔵 [API] Adding new squat for date:', date);
-            userData.squats.push(date);
-        }
-        userData.lastActive = new Date().toISOString();
-        console.debug('🔵 [API] Updated user data:', {
-            squatsCount: userData.squats.length,
-            lastActive: userData.lastActive
+        console.debug('🔵 [API] Recorded squat for:', {
+            userId,
+            monthKey,
+            dayOfMonth
         });
-
-        // Save updated user data
-        console.debug('🔵 [API] Saving updated user data');
-        await kv.set(`user:${userId}`, userData);
-
-        // Get all users for stats
-        /*
-        console.debug('🔵 [API] Fetching user index for stats calculation');
-        const userIndex = await kv.get('userIndex') || {};
-        const userIds = Object.values(userIndex);
-        console.debug('🔵 [API] Fetching data for', userIds.length, 'users');
         
-        const users = await Promise.all(
-            userIds.map(id => kv.get(`user:${id}`))
-        );
-        console.debug('🔵 [API] Retrieved all user data');
-
-        console.debug('🔵 [API] Calculating stats');
-        const stats = await calculateStats(users);
-        console.debug('🔵 [API] Stats calculated:', stats);
-        */
-
-        console.debug('🔵 [API] Squat recording completed successfully');
         console.groupEnd();
         res.status(200).json({ success: true });
     } catch (error) {

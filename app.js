@@ -12,18 +12,20 @@ class SquatApp {
         this.currentStreak = 0;
 
         // App Parameters
-        this.displayDays = 10;
+        this.displayDays = 12;
         this.debugEnabled = window.location.hostname === 'localhost'; // Logging Enabled in Development
 
         // Variables
         this.squatToday = false;
         this.todaysDate = new Date();
-        var dd = String(this.todaysDate.getDate()).padStart(2, '0');
-        var mm = String(this.todaysDate.getMonth() + 1).padStart(2, '0'); // January is 0!
-        var yyyy = this.todaysDate.getFullYear();
-        
-        this.today = yyyy + '-' + mm + '-' + dd;
-        this.todaysDate = new Date(this.today);
+
+        this.dd = String(this.todaysDate.getDate()).padStart(2, '0');
+        this.mm = String(this.todaysDate.getMonth() + 1).padStart(2, '0'); // January is 0!
+        this.yyyy = this.todaysDate.getFullYear();
+
+        this.ddInt = parseInt(this.dd);
+        this.today = this.yyyy + '-' + this.mm + '-' + this.dd;
+        this.monthKey = `${this.yyyy}-${this.mm}`;
         
         // Objects
         this.ws = null;
@@ -308,7 +310,7 @@ class SquatApp {
     processUserData(data) {
         // Process users and calculate their streaks
         const processedUsers = data.users.map(user => {
-            const streak = this.calculateStreak(user.squats || []);
+            const streak = this.calculateStreak(user.squats || {});
             return {
                 ...user,
                 currentStreak: streak
@@ -320,7 +322,7 @@ class SquatApp {
             longestStreak: 0,
             streakHolder: '',
             userStreaks: {},
-            activeToday: processedUsers.filter(user => user.currentStreak > 1).length
+            activeToday: processedUsers.filter(user => this.hasSquattedToday(user.squats)).length
         };
 
         processedUsers.forEach(user => {
@@ -342,28 +344,45 @@ class SquatApp {
 
         // Update current user reference
         this.currentUser = processedUsers.find(u => u.userId === this.userId);
-        this.squatToday = this.currentUser?.squats?.includes(this.today) || false;
+        this.squatToday = this.hasSquattedToday(this.currentUser?.squats);
         
         // Trigger UI update
         this.updateUI();
     }
 
+    hasSquattedToday(squats) {
+        if (!squats) {
+            console.debug('🔵 [Squat] No squats data available');
+            return false;
+        }
+        
+        const hasSquatted = squats[this.monthKey].includes(this.ddInt);
+        
+        return hasSquatted;
+    }
+
     calculateStreak(squats) {
-        if (!squats || squats.length === 0) return 0;
+        if (!squats) return 0;
         
         let streak = 0;
-        let checkDate = new Date(this.today);
-        
-        // Sort squats to ensure chronological order
-        const sortedSquats = [...squats].sort();
+        let checkDate = new Date(this.todaysDate);
         
         // If they haven't squatted today, start checking from yesterday
-        if (!sortedSquats.includes(this.today)) {
+        if (!this.hasSquattedToday(squats)) {
             checkDate.setDate(checkDate.getDate() - 1);
         }
         
         // Count backwards from checkDate to find streak
-        while (sortedSquats.includes(checkDate.toISOString().split('T')[0])) {
+        while (true) {
+            const monthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
+            const dayOfMonth = String(checkDate.getDate()).padStart(2, '0');
+            const dayOfMonthInt = parseInt(dayOfMonth);
+            
+            // Check if the month exists and contains the day
+            if (!squats[monthKey] || !squats[monthKey].includes(dayOfMonthInt)) {
+                break;
+            }
+            
             streak++;
             checkDate.setDate(checkDate.getDate() - 1);
         }
@@ -436,33 +455,33 @@ class SquatApp {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: this.userId,
-                    date: this.today
+                    date: this.todaysDate
                 })
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             this.squatToday = true;
             this.updateSquatButtonState(true);
             
             // Update UI
             await this.fetchUserData();
+            console.debug('🔵 [Squat] Successfully recorded');
         } 
         catch (error) {
+            console.error('🔴 [Squat] Error recording:', error);
             // More specific error messages
             if (error.name === 'TypeError') {
                 this.showError('Network error. Please check your connection.');
             } else {
                 this.showError('Failed to record squat: ' + error.message);
             }
-
-            console.debug('🔵 [Squat] Successfully recorded');
-            this.squatToday = true;
-            this.updateSquatButtonState(true);
-            
-            // Update UI
-            await this.fetchUserData();
         }
         finally {
             squatButton.classList.remove('loading');
+            console.groupEnd();
         }
     }
 
@@ -595,18 +614,47 @@ class SquatApp {
         // Setup grid layout
         const grid = document.getElementById('squat-grid');
         grid.innerHTML = '';
-
         grid.style.display = 'grid';
         grid.style.gridTemplateColumns = `minmax(100px, auto) minmax(80px, auto) repeat(${dates.length}, 1fr)`;
         grid.style.gridTemplateRows = `auto repeat(${sortedUsers.length}, auto)`;
 
-        // Add header row
+        // Add headers (same as before)
+        this.addGridHeaders(grid, dates, sortedUsers.length);
+
+        // Add user rows with streak and squat data
+        sortedUsers.forEach(user => {
+            // Username and streak cells (same as before)
+            this.addUserCells(grid, user);
+
+            // Squat cells for each date
+            dates.forEach(date => {
+                const [yyyy, mm, dd] = date.split('-');
+                const monthKey = `${yyyy}-${mm}`;
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                
+                if (user.squats?.[monthKey]?.includes(parseInt(dd))) {
+                    cell.classList.add('squatted');
+                    cell.innerHTML = '✓';
+                }
+                
+                if (date === this.today) {
+                    cell.classList.add('today');
+                }
+                
+                grid.appendChild(cell);
+            });
+        });
+
+        console.groupEnd();
+    }
+
+    addGridHeaders(grid, dates, userCount) {
         const cornerCell = document.createElement('div');
         cornerCell.className = 'grid-cell corner-header';
-        cornerCell.textContent = `Users (${sortedUsers.length})`;
+        cornerCell.textContent = `Users (${userCount})`;
         grid.appendChild(cornerCell);
 
-        // Add streak header
         const streakHeader = document.createElement('div');
         streakHeader.className = 'grid-cell corner-header';
         streakHeader.textContent = 'Streak';
@@ -623,7 +671,7 @@ class SquatApp {
             cell.textContent = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
             
             // Highlight today's column
-            if (date === this.todaysDate.toISOString().split('T')[0]) {
+            if (date === this.today) {
                 cell.classList.add('today');
             }
             
@@ -635,49 +683,25 @@ class SquatApp {
             
             grid.appendChild(cell);
         });
+    }
 
-        // Add user rows with streak and squat data
-        sortedUsers.forEach(user => {
-            // Username cell
-            const nameCell = document.createElement('div');
-            nameCell.className = 'grid-cell user-name';
-            if (user.userId === this.userId) {
-                nameCell.classList.add('current-user');
-            }
-            nameCell.textContent = user.username;
-            grid.appendChild(nameCell);
+    addUserCells(grid, user) {
+        const nameCell = document.createElement('div');
+        nameCell.className = 'grid-cell user-name';
+        if (user.userId === this.userId) {
+            nameCell.classList.add('current-user');
+        }
+        nameCell.textContent = user.username;
+        grid.appendChild(nameCell);
 
-            // Streak cell
-            const streakCell = document.createElement('div');
-            streakCell.className = 'grid-cell streak-cell';
-            if (user.currentStreak > 0) {
-                streakCell.textContent = `${user.currentStreak}🔥`;
-            } else {
-                streakCell.textContent = '0';
-            }
-            grid.appendChild(streakCell);
-
-            // Squat cells for each date
-            dates.forEach(date => {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                
-                // Check if user has squatted on this date
-                if (user.squats && user.squats.includes(date)) {
-                    cell.classList.add('squatted');
-                    cell.innerHTML = '✓';
-                }
-                
-                // Highlight today's column
-                if (date === this.todaysDate.toISOString().split('T')[0]) {
-                    cell.classList.add('today');
-                }
-                
-                grid.appendChild(cell);
-            });
-        });
-
-        console.groupEnd();
+        const streakCell = document.createElement('div');
+        streakCell.className = 'grid-cell streak-cell';
+        if (user.currentStreak > 0) {
+            streakCell.textContent = `${user.currentStreak}🔥`;
+        } else {
+            streakCell.textContent = '0';
+        }
+        grid.appendChild(streakCell);
     }
 
     // Offline sync handling

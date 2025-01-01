@@ -19,19 +19,23 @@ export default async function handler(req, res) {
             return res.status(409).json({ error: 'Username already taken' });
         }
 
-        // Create user data
+        // Create user metadata
         const userData = {
             userId,
             username,
-            lastActive: new Date().toISOString(),
-            squats: []
+            lastActive: new Date(),
+            joinDate: new Date()
         };
 
-        // Save user data and update index atomically using transaction
+        // Get current active users
+        const activeUsers = await kv.smembers('activeUsers') || [];
+
+        // Save user data and update indexes atomically using pipeline
         const pipeline = kv.pipeline();
         pipeline.set(`user:${userId}`, userData);
         userIndex[username.toLowerCase()] = userId;
         pipeline.set('userIndex', userIndex);
+        pipeline.sadd('activeUsers', userId);
         await pipeline.exec();
         
         console.debug('🔵 [API] Saved new user:', { userId, username });
