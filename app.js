@@ -19,14 +19,15 @@ class SquatApp {
         // Variables
         this.squatToday = false;
         this.todaysDate = new Date();
-
-        this.dd = String(this.todaysDate.getDate()).padStart(2, '0');
-        this.mm = String(this.todaysDate.getMonth() + 1).padStart(2, '0'); // January is 0!
-        this.yyyy = this.todaysDate.getFullYear();
-
-        this.ddInt = parseInt(this.dd);
-        this.today = this.yyyy + '-' + this.mm + '-' + this.dd;
-        this.monthKey = `${this.yyyy}-${this.mm}`;
+        
+        // Get today's date in YYYY-MM-DD format
+        const yyyy = this.todaysDate.getFullYear();
+        const mm = String(this.todaysDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(this.todaysDate.getDate()).padStart(2, '0');
+        
+        this.ddInt = parseInt(dd);
+        this.today = `${yyyy}-${mm}-${dd}`;
+        this.monthKey = `${yyyy}-${mm}`;
         
         // Objects
         this.ws = null;
@@ -189,6 +190,37 @@ class SquatApp {
             });
         }
         
+        // Recovery Answer Input - Enter Key (for initial setup)
+        document.addEventListener('click', (event) => {
+            if (event.target.id === 'recovery-answer') {
+                event.target.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        console.debug('🔵 [Event] Enter key pressed on recovery answer input');
+                        const confirmButton = document.getElementById('confirm-recovery');
+                        if (confirmButton) {
+                            confirmButton.click();
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Recovery Answer Input - Enter Key (for account recovery)
+        const recoveryAnswerInput = document.getElementById('recovery-answer');
+        if (recoveryAnswerInput) {
+            recoveryAnswerInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    console.debug('🔵 [Event] Enter key pressed on recovery answer input');
+                    const recoverButton = document.getElementById('recover-account');
+                    if (recoverButton) {
+                        recoverButton.click();
+                    }
+                }
+            });
+        }
+        
         // Squat Button
         const squatButton = document.getElementById('squat-button');
         if (squatButton) {
@@ -274,7 +306,7 @@ class SquatApp {
                 <div class="recovery-code-container">
                     <h3>🤔 One Last Fun Question</h3>
                     <p>If you could shoot a liquid out of your index finger, what would it be?</p>
-                    <input type="text" id="recovery-answer" placeholder="Your answer..." class="recovery-input">
+                    <input type="password" id="recovery-answer" class="recovery-input" placeholder="Your answer..." autocomplete="new-password">
                     <p class="recovery-warning">Remember your answer! You'll need it if you want to recover your account on a new device.</p>
                     <button id="confirm-recovery" class="primary-button">Save My Answer</button>
                     <p id="recovery-error" class="error hidden"></p>
@@ -615,7 +647,7 @@ class SquatApp {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: this.userId,
-                    date: this.todaysDate
+                    date: this.today
                 })
             });
 

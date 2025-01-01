@@ -22,14 +22,14 @@ export default async function handler(req, res) {
         }
 
         // Parse date and create monthly key
-        const squatDate = new Date(date);
-        const monthKey = `${squatDate.getFullYear()}-${String(squatDate.getMonth() + 1).padStart(2, '0')}`;
-        const dayOfMonth = String(squatDate.getDate()).padStart(2, '0');
+        const [year, month, day] = date.split('-');
+        const monthKey = `${year}-${month}`;
+        const dayOfMonth = day;
         const monthlySquatsKey = `squats:${monthKey}:${userId}`;
 
         // Add squat to monthly set and update user's lastActive
         const pipeline = kv.pipeline();
-        pipeline.sadd(monthlySquatsKey, dayOfMonth);
+        pipeline.sadd(monthlySquatsKey, parseInt(dayOfMonth));
         pipeline.set(`user:${userId}`, {
             ...userData,
             lastActive: new Date()

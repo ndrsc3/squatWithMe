@@ -24,7 +24,10 @@
                 <input type="text" id="username" placeholder="Choose your username">
                 <button id="save-username">Start Squatting</button>
                 <p id="username-error" class="error hidden"></p>
-                <p class="recovery-link">Already have an account? <a href="#" id="show-recovery">Recover it here</a></p>
+                <div class="recovery-link">
+                    <p>Already have an account?</p>
+                    <a href="#" id="show-recovery">Recover it here</a>
+                </div>
             </div>
 
             <div id="recovery-code-display" class="hidden">
@@ -37,7 +40,7 @@
                 <input type="text" id="recovery-username" placeholder="Your username">
                 <div id="recovery-code-container" class="hidden">
                     <p id="recovery-question" class="fun-question">If you could shoot a liquid out of your index finger, what would it be?</p>
-                    <input type="text" id="recovery-answer" placeholder="Your answer...">
+                    <input type="password" id="recovery-answer" class="recovery-input" placeholder="Your answer..." autocomplete="new-password">
                 </div>
                 <button id="recover-account">Recover Account</button>
                 <p id="recovery-error" class="error hidden"></p>
