@@ -12,6 +12,10 @@ class SquatApp {
         this.currentStreak = 0;
         this.deviceId = null;
 
+        // Auth tokens
+        this.accessToken = null;
+        this.refreshToken = null;
+
         // App Parameters
         this.displayDays = 12;
         this.debugEnabled = window.location.hostname === 'localhost'; // Logging Enabled in Development
@@ -66,42 +70,36 @@ class SquatApp {
         console.group('🔵 [User] Setup Local User');
 
         try {
+            // Get stored auth data
+            const storedAuth = localStorage.getItem('authTokens');
             
-            // Get User Stored Locally
-            const storedUser = localStorage.getItem('squatUser');
-            
-            if (storedUser) {
+            if (storedAuth) {
                 try {
-                    const userData = JSON.parse(storedUser);
-                    console.debug('🔵 [Storage] Loaded Local User Data:', userData);
+                    const { accessToken, refreshToken, userId, username } = JSON.parse(storedAuth);
                     
-                    // Check if user data is valid
-                    if (!userData.userId || !userData.username) {
-                        console.warn('🟡 [Storage] Invalid user data structure:', userData);
-                        localStorage.removeItem('squatUser');
-                        document.getElementById('user-setup').classList.remove('hidden');
-                        return;
+                    // Store tokens and basic user info
+                    this.accessToken = accessToken;
+                    this.refreshToken = refreshToken;
+                    this.userId = userId;
+                    this.username = username;
+                    
+                    // Verify token is still valid
+                    const response = await this.fetchWithAuth('/api/auth/verify');
+                    if (!response.ok) {
+                        throw new Error('Invalid token');
                     }
-                    
-                    // Store user info
-                    this.userId   = userData.userId;
-                    this.username = userData.username;
                     
                     // Update UI
                     document.getElementById('main-app').classList.remove('hidden');
                     document.getElementById('current-username').textContent = this.username;
 
-                } catch (parseError) {
-                    console.error('🔴 [Storage] JSON parse error:', parseError);
-                    localStorage.removeItem('squatUser');
-
-                    // Update UI
+                } catch (error) {
+                    console.error('🔴 [Storage] Auth error:', error);
+                    localStorage.removeItem('authTokens');
                     document.getElementById('user-setup').classList.remove('hidden');
                 }
             } else {
-                console.debug('🔵 [Storage] No stored user found');
-
-                // Update UI
+                console.debug('🔵 [Storage] No stored auth found');
                 document.getElementById('user-setup').classList.remove('hidden');
             }
         } catch (error) {
@@ -369,18 +367,23 @@ class SquatApp {
                 throw new Error(`HTTP error! status: ${saveResponse.status}`);
             }
 
-            // Update local storage
+            const result = await saveResponse.json();
+
+            // Store tokens
+            this.accessToken = result.accessToken;
+            this.refreshToken = result.refreshToken;
             this.username = username;
-            localStorage.setItem('squatUser', JSON.stringify({
+
+            // Update local storage
+            localStorage.setItem('authTokens', JSON.stringify({
+                accessToken: this.accessToken,
+                refreshToken: this.refreshToken,
                 userId: this.userId,
                 username: this.username
             }));
 
             // Update UI
-            const recoveryCodeDisplay = document.getElementById('recovery-code-display');
-            if (recoveryCodeDisplay) {
-                recoveryCodeDisplay.classList.add('hidden');
-            }
+            document.getElementById('recovery-code-display').classList.add('hidden');
             document.getElementById('user-setup').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('current-username').textContent = this.username;
@@ -390,13 +393,6 @@ class SquatApp {
         } catch (error) {
             console.error('🔴 [User] Error saving username:', error);
             this.showError('Failed to save username. Please try again.');
-            // Reset UI state on error
-            const userSetupForm = document.getElementById('user-setup-form');
-            const recoveryCodeDisplay = document.getElementById('recovery-code-display');
-            if (userSetupForm && recoveryCodeDisplay) {
-                userSetupForm.classList.remove('hidden');
-                recoveryCodeDisplay.classList.add('hidden');
-            }
         }
         console.groupEnd();
     }
@@ -406,7 +402,6 @@ class SquatApp {
         try {
             const username = document.getElementById('recovery-username').value.trim();
             const recoveryAnswer = document.getElementById('recovery-answer')?.value.trim();
-            const errorElement = document.getElementById('recovery-error');
 
             if (!username) {
                 this.showError('Please enter your username', 'recovery-error');
@@ -416,7 +411,6 @@ class SquatApp {
             // Get device information
             const deviceFingerprint = await this.generateDeviceFingerprint();
 
-            // Try to recover without answer first (for known devices)
             const response = await fetch('/api/recover-account', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -432,7 +426,6 @@ class SquatApp {
 
             if (!response.ok) {
                 if (response.status === 401 && !recoveryAnswer) {
-                    // Show recovery question if needed
                     document.getElementById('recovery-code-container').classList.remove('hidden');
                     document.getElementById('recovery-question').textContent = 
                         'If you could shoot a liquid out of your index finger, what would it be?';
@@ -443,10 +436,15 @@ class SquatApp {
                 return;
             }
 
-            // Update local storage with recovered account
+            // Store tokens and user info
+            this.accessToken = result.accessToken;
+            this.refreshToken = result.refreshToken;
             this.userId = result.userId;
             this.username = result.username;
-            localStorage.setItem('squatUser', JSON.stringify({
+
+            localStorage.setItem('authTokens', JSON.stringify({
+                accessToken: this.accessToken,
+                refreshToken: this.refreshToken,
                 userId: this.userId,
                 username: this.username
             }));
@@ -469,23 +467,10 @@ class SquatApp {
 
     async fetchUserData() {
         try {
-            // Fetch Cached Data
-            const cachedData = localStorage.getItem('squatData');
-            if (cachedData) {
-                const { data, timestamp } = JSON.parse(cachedData);
-                // Use cached data if less than 5 minutes old
-                if (Date.now() - timestamp < 300000) {
-                    this.squatData = data;
-                    this.processUserData(data);
-                }
-            }
-            
-            // Fetch fresh data
-            const response = await fetch('/api/get-users');
+            const response = await this.fetchWithAuth('/api/get-users');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             this.squatData = await response.json();
             
-            // Process and store data
             this.processUserData(this.squatData);
             
             // Cache the new data
@@ -636,17 +621,15 @@ class SquatApp {
     async recordSquat() {
         console.group('🔵 [Squat] Recording Squat');
 
-        // Get Elements
         const squatButton = document.getElementById('squat-button');
         const squatStatus = document.getElementById('squat-status');
 
         try { 
             squatButton.classList.add('loading');
-            const response = await fetch('/api/record-squat', {
+            const response = await this.fetchWithAuth('/api/record-squat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: this.userId,
                     date: this.today
                 })
             });
@@ -664,7 +647,6 @@ class SquatApp {
         } 
         catch (error) {
             console.error('🔴 [Squat] Error recording:', error);
-            // More specific error messages
             if (error.name === 'TypeError') {
                 this.showError('Network error. Please check your connection.');
             } else {
@@ -1002,6 +984,54 @@ class SquatApp {
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async refreshAccessToken() {
+        try {
+            const response = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken: this.refreshToken })
+            });
+
+            if (!response.ok) {
+                throw new Error('Token refresh failed');
+            }
+
+            const { accessToken } = await response.json();
+            this.accessToken = accessToken;
+            return true;
+        } catch (error) {
+            console.error('🔴 Failed to refresh token:', error);
+            return false;
+        }
+    }
+
+    async fetchWithAuth(url, options = {}) {
+        // Add authorization header
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${this.accessToken}`
+        };
+
+        try {
+            const response = await fetch(url, { ...options, headers });
+            
+            // If token expired, try to refresh
+            if (response.status === 401) {
+                const data = await response.json();
+                if (data.code === 'TOKEN_EXPIRED' && await this.refreshAccessToken()) {
+                    // Retry with new token
+                    headers.Authorization = `Bearer ${this.accessToken}`;
+                    return fetch(url, { ...options, headers });
+                }
+            }
+            
+            return response;
+        } catch (error) {
+            console.error('🔴 Request failed:', error);
+            throw error;
+        }
     }
 }
 

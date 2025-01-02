@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv';
 import crypto from 'crypto';
+import { generateTokenPair } from '../utils/jwt';
 
 function hashAnswer(answer) {
     // Normalize the answer (lowercase, trim whitespace)
@@ -80,13 +81,18 @@ export default async function handler(req, res) {
                 await kv.set(`user:${userId}`, userData);
             }
 
+            // Generate tokens
+            const tokens = generateTokenPair({
+                ...userData,
+                deviceId: deviceId,
+                deviceTrusted: true
+            });
+
             console.debug('🔵 [API] Account recovered successfully for:', userId);
             console.groupEnd();
             res.status(200).json({ 
                 success: true,
-                userId: userData.userId,
-                username: userData.username,
-                deviceTrusted: true
+                ...tokens
             });
         }
     } catch (error) {

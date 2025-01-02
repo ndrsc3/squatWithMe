@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv';
 import crypto from 'crypto';
+import { generateTokenPair } from '../utils/jwt';
 
 function hashAnswer(answer) {
     // Normalize the answer (lowercase, trim whitespace)
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
             lastActive: new Date(),
             joinDate: new Date(),
             recoveryHash: hashedAnswer,
+            currentStreak: 0,
             devices: [{
                 deviceId,
                 fingerprint: deviceFingerprint,
@@ -43,6 +45,13 @@ export default async function handler(req, res) {
                 trusted: true
             }]
         };
+
+        // Generate tokens
+        const tokens = generateTokenPair({
+            ...userData,
+            deviceId,
+            deviceTrusted: true
+        });
 
         // Get current active users
         const activeUsers = await kv.smembers('activeUsers') || [];
@@ -57,7 +66,10 @@ export default async function handler(req, res) {
         
         console.debug('🔵 [API] Saved new user:', { userId, username });
         console.groupEnd();
-        res.status(200).json({ success: true });
+        res.status(200).json({ 
+            success: true,
+            ...tokens
+        });
     } catch (error) {
         console.error('🔴 [API] Error saving user:', error);
         console.groupEnd();
