@@ -1,11 +1,5 @@
 import { kv } from '@vercel/kv';
-import crypto from 'crypto';
-
-function hashAnswer(answer) {
-    // Normalize the answer (lowercase, trim whitespace)
-    const normalizedAnswer = answer.toLowerCase().trim();
-    return crypto.createHash('sha256').update(normalizedAnswer).digest('hex');
-}
+import { hashAnswer } from './lib/hash.js';
 
 export default async function handler(req, res) {
     console.group('🔵 [API] Recover Account');

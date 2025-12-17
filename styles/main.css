@@ -1,0 +1,11 @@
+/**
+ * Main stylesheet - imports all partials
+ * Order matters: variables first, then base, then specific components
+ */
+
+@import 'variables.css';
+@import 'base.css';
+@import 'layout.css';
+@import 'components.css';
+@import 'grid.css';
+@import 'utilities.css';

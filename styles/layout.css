@@ -1,0 +1,251 @@
+/**
+ * Layout styles - app container, header, sections
+ */
+
+#app {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Header */
+header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+#subtitle {
+    margin: 0;
+    font-size: 0.9em;
+    color: #666;
+    font-style: italic;
+}
+
+/* App Description Section */
+#app-description {
+    max-width: 800px;
+    margin: 0 auto 10px auto;
+    padding: 10px 20px 20px 20px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+#app-description h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#app-description p {
+    margin: 15px 0;
+    line-height: 1.6;
+    font-size: 1.1em;
+}
+
+.description-highlight {
+    font-style: italic;
+    color: var(--primary-color);
+    font-weight: 500;
+    font-size: 0.8em !important;
+    margin-top: 25px !important;
+}
+
+/* User Input Section */
+#user-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    padding: 10px 0;
+}
+
+.user-input-text {
+    margin: 0;
+    padding: 5px 0;
+}
+
+/* Stats Section */
+#stats {
+    margin: 0 auto;
+    font-size: 1.1em;
+    padding: 0 15px 10px 15px;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.stats-list h2 {
+    padding: 0;
+}
+
+.stats-item {
+    margin: 0;
+    color: var(--text-color);
+}
+
+/* User Setup Section */
+#user-setup {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#user-setup-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.setup-image {
+    max-width: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto 2rem auto;
+    border-radius: 8px;
+}
+
+/* Account Recovery Section */
+#account-recovery {
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Grid Container */
+#grid-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    margin: 0;
+    padding: 10px;
+    max-width: 100%;
+    position: relative;
+    /* Hide scrollbar but keep functionality */
+    -ms-overflow-style: none;
+}
+
+#grid-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Footer */
+.app-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-links a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+}
+
+.footer-links .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.footer-text {
+    color: var(--text-color);
+    font-size: 0.9em;
+    text-align: center;
+}
+
+/* Mobile layout adjustments */
+@media (max-width: 768px) {
+    #app {
+        padding: 10px;
+    }
+
+    #app-description {
+        padding: 10px;
+        margin: 0 auto 10px auto;
+    }
+
+    #app-description p {
+        font-size: 0.95em;
+        margin: 10px 0;
+    }
+
+    .stats-list {
+        font-size: 0.9em;
+    }
+
+    .footer-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 30px;
+    }
+
+    .footer-links a span {
+        display: none;
+    }
+
+    .footer-links .icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .footer-links a {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    #grid-container {
+        margin-top: 10px;
+        padding: 10px 0;
+    }
+}

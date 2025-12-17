@@ -86,16 +86,51 @@ vercel dev
 ## 🔍 Code Structure
 
 ```
-├── api/                # Backend API endpoints
-│   ├── check-username.js
-│   ├── get-users.js
-│   ├── record-squat.js
-│   ├── save-user.js
-│   └── ws.js          # WebSocket handler
-├── app.js             # Main application logic
-├── styles.css         # Global styles
-└── index.html         # Entry point
+├── index.html              # Entry point
+├── src/                    # Frontend source code
+│   ├── main.js             # Application entry point
+│   ├── state.js            # Simple pub/sub state management
+│   ├── modules/            # Business logic modules
+│   │   ├── api.js          # API client with error handling
+│   │   ├── auth.js         # User authentication & device ID
+│   │   ├── squats.js       # Squat tracking & streak calculation
+│   │   ├── storage.js      # LocalStorage operations
+│   │   └── utils.js        # Date helpers & logging
+│   └── ui/                 # UI components
+│       ├── dom.js          # DOM query helpers
+│       ├── grid.js         # Squat grid rendering
+│       ├── render.js       # Central render orchestration
+│       └── theme.js        # Dark/light theme management
+├── styles/                 # Organized CSS
+│   ├── main.css            # CSS entry point (imports partials)
+│   ├── variables.css       # CSS custom properties
+│   ├── base.css            # Typography & reset
+│   ├── layout.css          # App structure
+│   ├── components.css      # Buttons, inputs, etc.
+│   ├── grid.css            # Squat grid styles
+│   └── utilities.css       # Helper classes
+├── api/                    # Backend API endpoints (Vercel serverless)
+│   ├── lib/                # Shared utilities
+│   │   ├── hash.js         # Password hashing
+│   │   └── validation.js   # Input validation
+│   ├── check-username.js   # Username availability
+│   ├── get-users.js        # Fetch all users
+│   ├── record-squat.js     # Record daily squat
+│   ├── recover-account.js  # Account recovery
+│   ├── save-user.js        # New user registration
+│   └── ws.js               # WebSocket handler
+└── public/                 # Static assets
+    └── assets/images/
 ```
+
+## 🏗️ Architecture
+
+This app follows a **modular vanilla JavaScript architecture** with clear separation of concerns:
+
+- **State Management**: Simple pub/sub store (no framework needed)
+- **Modules**: Each module handles a single responsibility
+- **UI Layer**: Pure render functions that update DOM based on state
+- **API Layer**: Centralized fetch wrappers with consistent error handling
 
 ## 🎯 Key Features Explained
 

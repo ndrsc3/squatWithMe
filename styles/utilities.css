@@ -1,0 +1,36 @@
+/**
+ * Utility classes - visibility, loading states, errors
+ */
+
+/* Visibility */
+.hidden {
+    display: none !important;
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Error Messages */
+.error {
+    color: var(--error-color);
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+/* Legacy user-info class (if still used) */
+.user-info {
+    margin-bottom: 10px;
+    padding: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Transitions */
+.grid-cell,
+#squat-button,
+.theme-toggle {
+    transition: all 0.2s ease-in-out;
+}

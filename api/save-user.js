@@ -1,11 +1,6 @@
 import { kv } from '@vercel/kv';
-import crypto from 'crypto';
-
-function hashAnswer(answer) {
-    // Normalize the answer (lowercase, trim whitespace)
-    const normalizedAnswer = answer.toLowerCase().trim();
-    return crypto.createHash('sha256').update(normalizedAnswer).digest('hex');
-}
+import { hashAnswer } from './lib/hash.js';
+import { validateUsername } from './lib/validation.js';
 
 export default async function handler(req, res) {
     console.group('🔵 [API] Save User');
@@ -18,6 +13,14 @@ export default async function handler(req, res) {
     const { userId, username, deviceId, deviceFingerprint, recoveryAnswer } = req.body;
     
     try {
+        // Validate username format
+        const validation = validateUsername(username);
+        if (!validation.valid) {
+            console.warn('🟡 [API] Invalid username:', validation.error);
+            console.groupEnd();
+            return res.status(400).json({ error: validation.error });
+        }
+
         // Check if username exists in index
         const userIndex = await kv.get('userIndex') || {};
         if (userIndex[username.toLowerCase()]) {
