@@ -44,6 +44,67 @@ export function createStore(initialState) {
 }
 
 /**
+ * Create a derived value that automatically updates when store changes
+ * @param {Object} store - Store created by createStore
+ * @param {Function} computeFn - Function that computes derived value from state
+ * @returns {Object} Object with get() method to retrieve current value
+ */
+export function derived(store, computeFn) {
+    let value = computeFn(store.getState());
+    
+    store.subscribe(state => {
+        value = computeFn(state);
+    });
+    
+    return {
+        /**
+         * Get the current derived value
+         * @returns {*} Current computed value
+         */
+        get() {
+            return value;
+        }
+    };
+}
+
+/**
+ * Create multiple derived values at once
+ * @param {Object} store - Store created by createStore
+ * @param {Object} computeMap - Map of { name: computeFn }
+ * @returns {Object} Object with get(name) method
+ */
+export function derivedMany(store, computeMap) {
+    const derivedValues = {};
+    
+    for (const [name, computeFn] of Object.entries(computeMap)) {
+        derivedValues[name] = derived(store, computeFn);
+    }
+    
+    return {
+        /**
+         * Get a derived value by name
+         * @param {string} name - Name of the derived value
+         * @returns {*} Current computed value
+         */
+        get(name) {
+            return derivedValues[name]?.get();
+        },
+        
+        /**
+         * Get all derived values as an object
+         * @returns {Object} All derived values
+         */
+        getAll() {
+            const result = {};
+            for (const [name, d] of Object.entries(derivedValues)) {
+                result[name] = d.get();
+            }
+            return result;
+        }
+    };
+}
+
+/**
  * Initial application state
  */
 export const initialState = {

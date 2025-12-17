@@ -79,7 +79,7 @@ export async function checkUsernameAvailable(username) {
         if (error instanceof ApiError && error.status === 409) {
             return { 
                 available: false, 
-                error: 'Username is already taken. If this is your username, click "Recover Account" to log in.' 
+                error: 'Username already exists. If this is you, click "Recover it here" below.' 
             };
         }
         return { available: false, error: error.message };

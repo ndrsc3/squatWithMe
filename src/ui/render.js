@@ -2,9 +2,11 @@
  * Render module - central UI rendering based on state
  */
 
-import { byId, show, hide, setText, addClass, removeClass } from './dom.js';
+import { byId, show, hide, setText, setHtml, addClass, removeClass } from './dom.js';
 import { renderGrid } from './grid.js';
 import { debug } from '../modules/utils.js';
+import { escapeHtml } from './escape.js';
+import { EmptyState, LoadingSpinner } from './components.js';
 
 /**
  * Main render function - updates entire UI based on state
@@ -24,6 +26,18 @@ export function render(state) {
             break;
         case 'main':
             renderMainView(state);
+            break;
+        case 'guidelines':
+            renderGuidelinesView(state);
+            break;
+        case 'points':
+            renderPointsView(state);
+            break;
+        case 'profile':
+            renderProfileView(state);
+            break;
+        case '404':
+            render404View(state);
             break;
         default:
             renderSetupView(state);
@@ -88,9 +102,12 @@ function renderMainView(state) {
     hide(byId('user-setup'));
     show(byId('main-app'));
     
-    // Update username display
+    // Update username display (using escapeHtml for safety)
     if (state.user?.username) {
-        setText(byId('current-username'), state.user.username);
+        const usernameEl = byId('current-username');
+        if (usernameEl) {
+            usernameEl.textContent = state.user.username; // textContent is safe
+        }
     }
     
     // Update stats
@@ -102,6 +119,165 @@ function renderMainView(state) {
     // Render the grid if we have data
     if (state.squatData) {
         renderGrid(state.squatData, state.user?.userId);
+    }
+}
+
+/**
+ * Render the guidelines view (v2 feature placeholder)
+ * @param {Object} state
+ */
+function renderGuidelinesView(state) {
+    hide(byId('user-setup'));
+    show(byId('main-app'));
+    
+    // Update username display if logged in
+    if (state.user?.username) {
+        const usernameEl = byId('current-username');
+        if (usernameEl) {
+            usernameEl.textContent = state.user.username;
+        }
+    }
+    
+    // For now, show placeholder in the grid container
+    const gridContainer = byId('grid-container');
+    if (gridContainer) {
+        setHtml(gridContainer, `
+            <div class="view-content">
+                <h2>How to Squat Properly</h2>
+                ${EmptyState({
+                    icon: '🏋️',
+                    title: 'Guidelines Coming Soon',
+                    message: 'Proper squat form and tips will be available here.',
+                    actionText: 'Back to Main',
+                    actionId: 'back-to-main'
+                })}
+            </div>
+        `);
+        
+        // Add back button handler
+        const backBtn = byId('back-to-main');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                window.location.hash = '/';
+            });
+        }
+    }
+}
+
+/**
+ * Render the points view (v2 feature placeholder)
+ * @param {Object} state
+ */
+function renderPointsView(state) {
+    hide(byId('user-setup'));
+    show(byId('main-app'));
+    
+    // Update username display if logged in
+    if (state.user?.username) {
+        const usernameEl = byId('current-username');
+        if (usernameEl) {
+            usernameEl.textContent = state.user.username;
+        }
+    }
+    
+    // For now, show placeholder in the grid container
+    const gridContainer = byId('grid-container');
+    if (gridContainer) {
+        setHtml(gridContainer, `
+            <div class="view-content">
+                <h2>Points & Leaderboard</h2>
+                ${EmptyState({
+                    icon: '🏆',
+                    title: 'Points System Coming Soon',
+                    message: 'Earn points for squatting and compete with friends!',
+                    actionText: 'Back to Main',
+                    actionId: 'back-to-main'
+                })}
+            </div>
+        `);
+        
+        // Add back button handler
+        const backBtn = byId('back-to-main');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                window.location.hash = '/';
+            });
+        }
+    }
+}
+
+/**
+ * Render the profile view (v2 feature placeholder)
+ * @param {Object} state
+ */
+function renderProfileView(state) {
+    hide(byId('user-setup'));
+    show(byId('main-app'));
+    
+    // Update username display if logged in
+    if (state.user?.username) {
+        const usernameEl = byId('current-username');
+        if (usernameEl) {
+            usernameEl.textContent = state.user.username;
+        }
+    }
+    
+    // For now, show placeholder in the grid container
+    const gridContainer = byId('grid-container');
+    if (gridContainer) {
+        const username = state.user?.username || 'User';
+        setHtml(gridContainer, `
+            <div class="view-content">
+                <h2>Profile: ${escapeHtml(username)}</h2>
+                ${EmptyState({
+                    icon: '👤',
+                    title: 'Profile Settings Coming Soon',
+                    message: 'Customize your profile and view your stats here.',
+                    actionText: 'Back to Main',
+                    actionId: 'back-to-main'
+                })}
+            </div>
+        `);
+        
+        // Add back button handler
+        const backBtn = byId('back-to-main');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                window.location.hash = '/';
+            });
+        }
+    }
+}
+
+/**
+ * Render 404 not found view
+ * @param {Object} state
+ */
+function render404View(state) {
+    hide(byId('user-setup'));
+    show(byId('main-app'));
+    
+    const gridContainer = byId('grid-container');
+    if (gridContainer) {
+        setHtml(gridContainer, `
+            <div class="view-content">
+                ${EmptyState({
+                    icon: '🔍',
+                    title: 'Page Not Found',
+                    message: "The page you're looking for doesn't exist.",
+                    actionText: 'Go Home',
+                    actionId: 'go-home'
+                })}
+            </div>
+        `);
+        
+        // Add home button handler
+        const homeBtn = byId('go-home');
+        if (homeBtn) {
+            homeBtn.addEventListener('click', () => {
+                window.location.hash = '/';
+            });
+        }
     }
 }
 
@@ -130,6 +306,7 @@ function renderStats(state) {
     
     const holderEl = byId('streak-holder');
     if (holderEl) {
+        // Use escapeHtml for username which is user-generated
         setText(holderEl, stats.streakHolder || '-');
     }
 }
@@ -176,7 +353,8 @@ function renderLoadingState(isLoading) {
 export function renderError(message, elementId = 'username-error') {
     const errorEl = byId(elementId);
     if (errorEl) {
-        setText(errorEl, message);
+        // Use escapeHtml since error messages could potentially contain user input
+        errorEl.textContent = message; // textContent is inherently safe
         show(errorEl);
     }
 }
@@ -255,9 +433,17 @@ export function hideRecoveryQuestion() {
  */
 export function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message; // textContent is safe
     document.body.appendChild(toast);
     
-    setTimeout(() => toast.remove(), 3000);
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
