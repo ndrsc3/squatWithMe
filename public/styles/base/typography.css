@@ -1,0 +1,44 @@
+h1 {
+    margin: 0;
+}
+
+#subtitle {
+    margin: 0;
+    font-size: 0.9em;
+    color: #666;
+    font-style: italic;
+}
+
+#current-username {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#user-streak,
+#longest-streak,
+#streak-holder {
+    font-weight: 600;
+}
+
+.error {
+    color: var(--error-color);
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.user-info {
+    margin-bottom: 10px;
+    padding: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8em;
+    }
+
+    h2 {
+        font-size: 1.4em;
+    }
+}
