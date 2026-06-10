@@ -22,7 +22,7 @@ server.on('upgrade', (request) => {
 });
 
 declare global {
-    // eslint-disable-next-line no-var
+     
     var wss: WebSocketServer | undefined;
 }
 global.wss = wss;
