@@ -1,26 +1,20 @@
-import { kv } from '@vercel/kv';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { checkUsernameAvailable } from './_lib/storage';
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.group('🔵 [API] Check Username');
     try {
-        const { username } = req.body;
-        
-        // Check not empty
+        const { username } = req.body as { username?: string };
+
         if (!username) {
             console.warn('🟡 [API] Missing username in request');
             console.groupEnd();
             return res.status(400).json({ error: 'Username is required' });
         }
 
-        // Check username in index
-        const userIndex = await kv.get('userIndex') || {};
-        console.debug('🔵 [API] Checking username against index:', {
-            usernameToCheck: username,
-            indexSize: Object.keys(userIndex).length
-        });
+        const available = await checkUsernameAvailable(username);
 
-        // Check if username exists (case insensitive)
-        if (userIndex[username.toLowerCase()]) {
+        if (!available) {
             console.warn('🟡 [API] Username exists:', username);
             console.groupEnd();
             return res.status(409).json({ error: 'Username already taken' });
@@ -34,4 +28,4 @@ export default async function handler(req, res) {
         console.groupEnd();
         return res.status(500).json({ error: 'Internal server error' });
     }
-} 
+}
