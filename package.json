@@ -31,6 +31,8 @@
     },
     "dependencies": {
         "@upstash/redis": "^1.34.6",
-        "@vercel/kv": "^0.2.4"
+        "@vercel/kv": "^0.2.4",
+        "@vercel/postgres": "^0.10.0",
+        "jose": "^6.2.8"
     }
 }
