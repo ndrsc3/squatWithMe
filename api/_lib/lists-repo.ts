@@ -17,7 +17,7 @@ export async function createList(name: string, kind: string, ownerId: string): P
 export async function getAllListsWithMembership(userId: string): Promise<ListWithMembership[]> {
     const { rows } = await sql<ListWithMembership>`
         SELECT l.id, l.name, l.kind, l.created_by AS "createdBy", l.created_at AS "createdAt",
-               (m.user_id IS NOT NULL) AS "isMember"
+               (m.user_id IS NOT NULL) AS "isMember", m.role
         FROM lists l LEFT JOIN list_members m ON m.list_id = l.id AND m.user_id = ${userId}
         ORDER BY l.created_at DESC`;
     return rows;
@@ -64,16 +64,18 @@ export async function addItem(
         category?: string | null;
         region?: string | null;
         url?: string | null;
+        address?: string | null;
         imageUrl?: string | null;
         note?: string | null;
     },
     userId: string,
 ): Promise<Item> {
     const { rows } = await sql<Item>`
-        INSERT INTO items (list_id, title, category, region, url, image_url, note, created_by)
+        INSERT INTO items (list_id, title, category, region, url, address, image_url, note, created_by)
         VALUES (${listId}, ${input.title}, ${input.category ?? null}, ${input.region ?? null},
-                ${input.url ?? null}, ${input.imageUrl ?? null}, ${input.note ?? null}, ${userId})
-        RETURNING id, list_id AS "listId", title, category, region, url,
+                ${input.url ?? null}, ${input.address ?? null}, ${input.imageUrl ?? null},
+                ${input.note ?? null}, ${userId})
+        RETURNING id, list_id AS "listId", title, category, region, url, address,
                   image_url AS "imageUrl", note, created_by AS "createdBy", created_at AS "createdAt"`;
     const item = rows[0];
     if (!item) throw new Error('addItem: insert returned no row');
@@ -83,7 +85,7 @@ export async function addItem(
 /** Items in a list, each with its approvals + comments (stitched in JS — no array params). */
 export async function getListItems(listId: string): Promise<ItemWithMeta[]> {
     const { rows: items } = await sql<Item>`
-        SELECT id, list_id AS "listId", title, category, region, url,
+        SELECT id, list_id AS "listId", title, category, region, url, address,
                image_url AS "imageUrl", note, created_by AS "createdBy", created_at AS "createdAt"
         FROM items WHERE list_id = ${listId} ORDER BY created_at ASC`;
     if (items.length === 0) return [];
@@ -123,6 +125,22 @@ export async function toggleApproval(itemId: string, userId: string, emoji: stri
         VALUES (${itemId}, ${userId}, ${emoji})
         ON CONFLICT DO NOTHING`;
     return true;
+}
+
+// ── item management ────────────────────────────────────────────────
+/** May the user remove this item? Item creator, or an owner-role member of its list. */
+export async function canManageItem(itemId: string, userId: string): Promise<boolean> {
+    const { rows } = await sql`
+        SELECT 1 FROM items i
+        LEFT JOIN list_members m
+               ON m.list_id = i.list_id AND m.user_id = ${userId} AND m.role = 'owner'
+        WHERE i.id = ${itemId} AND (i.created_by = ${userId} OR m.user_id IS NOT NULL)
+        LIMIT 1`;
+    return rows.length > 0;
+}
+
+export async function deleteItem(itemId: string): Promise<void> {
+    await sql`DELETE FROM items WHERE id = ${itemId}`;
 }
 
 // ── comments ───────────────────────────────────────────────────────

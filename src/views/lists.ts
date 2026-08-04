@@ -36,6 +36,7 @@ interface DetailContext {
 }
 let currentFilter: 'all' | ItemCategory = 'all';
 let currentItems: ApiItem[] = [];
+let currentListRole: 'owner' | 'member' | null = null;
 let openItemId: string | null = null;
 
 // ── overview ───────────────────────────────────────────────────────
@@ -97,6 +98,7 @@ export async function renderListDetail(listId: string, myUserId: string): Promis
         return;
     }
     title.textContent = list.name;
+    currentListRole = list.role;
 
     if (!list.isMember) {
         container.textContent = '';
@@ -217,11 +219,21 @@ function fillItemDialog(item: ApiItem, context: DetailContext): void {
     const url = document.getElementById('detail-url') as HTMLAnchorElement;
     if (item.url) {
         url.href = item.url;
-        url.textContent = new URL(item.url).hostname.replace(/^www\./, '');
+        url.textContent = `🌐 ${new URL(item.url).hostname.replace(/^www\./, '')}`;
         url.classList.remove('hidden');
     } else {
         url.classList.add('hidden');
     }
+
+    // Maps link: precise address when present, else best-effort title + region search.
+    const map = document.getElementById('detail-map') as HTMLAnchorElement;
+    const mapQuery = item.address ?? [item.title, item.region].filter(Boolean).join(' ');
+    map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+    map.textContent = item.address ? `📍 ${item.address}` : '📍 Map';
+
+    const remove = document.getElementById('detail-remove')!;
+    const canRemove = currentListRole === 'owner' || item.createdBy === context.myUserId;
+    remove.classList.toggle('hidden', !canRemove);
 
     const mine = item.approvals.some((a) => a.userId === context.myUserId);
     const approve = document.getElementById('detail-approve')!;
@@ -278,6 +290,15 @@ export function initListDetailUI(getContext: () => DetailContext | null): void {
     document.getElementById('detail-comment-input')?.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') postComment();
     });
+    document.getElementById('detail-remove')?.addEventListener('click', () => {
+        if (!openItemId) return;
+        const item = currentItems.find((i) => i.id === openItemId);
+        if (!window.confirm(`Remove "${item?.title ?? 'this item'}" from the list?`)) return;
+        void apiClient.deleteItem(openItemId).then(() => {
+            itemDialog.close();
+            refresh();
+        });
+    });
 
     // add-item dialog
     document.getElementById('add-item-open')?.addEventListener('click', () => addDialog.showModal());
@@ -289,6 +310,7 @@ export function initListDetailUI(getContext: () => DetailContext | null): void {
         const categorySelect = document.getElementById('add-item-category') as HTMLSelectElement;
         const regionInput = document.getElementById('add-item-region') as HTMLInputElement;
         const urlInput = document.getElementById('add-item-url') as HTMLInputElement;
+        const addressInput = document.getElementById('add-item-address') as HTMLInputElement;
         const noteInput = document.getElementById('add-item-note') as HTMLTextAreaElement;
         const errorEl = document.getElementById('add-item-error')!;
 
@@ -308,10 +330,11 @@ export function initListDetailUI(getContext: () => DetailContext | null): void {
                 category: categorySelect.value as ItemCategory,
                 region: regionInput.value.trim() || undefined,
                 url: urlInput.value.trim() || undefined,
+                address: addressInput.value.trim() || undefined,
                 note: noteInput.value.trim() || undefined,
             })
             .then(() => {
-                titleInput.value = regionInput.value = urlInput.value = noteInput.value = '';
+                titleInput.value = regionInput.value = urlInput.value = addressInput.value = noteInput.value = '';
                 categorySelect.value = 'other';
                 addDialog.close();
                 refresh();

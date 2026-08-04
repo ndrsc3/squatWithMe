@@ -2,17 +2,27 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUser } from './_lib/auth';
 import type { ItemCategory } from './_lib/domain';
 import { allowMethods } from './_lib/http';
-import { addItem, getListItems, isMember } from './_lib/lists-repo';
+import { addItem, canManageItem, deleteItem, getListItems, isMember } from './_lib/lists-repo';
 import { fetchOgImage } from './_lib/og';
 
 const CATEGORIES: ItemCategory[] = ['resort', 'onsen', 'food', 'other'];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (!allowMethods(req, res, 'GET', 'POST')) return;
+    if (!allowMethods(req, res, 'GET', 'POST', 'DELETE')) return;
 
     try {
         const session = await requireUser(req);
         if (!session) return res.status(401).json({ error: 'Not signed in' });
+
+        if (req.method === 'DELETE') {
+            const { itemId } = (req.body ?? {}) as { itemId?: string };
+            if (!itemId) return res.status(400).json({ error: 'itemId is required' });
+            if (!(await canManageItem(itemId, session.userId))) {
+                return res.status(403).json({ error: 'Only the item author or list owner can remove it' });
+            }
+            await deleteItem(itemId);
+            return res.status(200).json({ success: true });
+        }
 
         if (req.method === 'GET') {
             const listId = typeof req.query.listId === 'string' ? req.query.listId : '';
@@ -23,12 +33,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ items: await getListItems(listId) });
         }
 
-        const { listId, title, category, region, url, note } = (req.body ?? {}) as {
+        const { listId, title, category, region, url, address, note } = (req.body ?? {}) as {
             listId?: string;
             title?: string;
             category?: string;
             region?: string;
             url?: string;
+            address?: string;
             note?: string;
         };
         const itemTitle = title?.trim() ?? '';
@@ -53,6 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 category: itemCategory,
                 region: region?.trim() || null,
                 url: itemUrl,
+                address: address?.trim() || null,
                 imageUrl,
                 note: note?.trim() || null,
             },

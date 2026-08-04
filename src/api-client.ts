@@ -15,6 +15,7 @@ export interface ApiList {
     createdBy: string;
     createdAt: string;
     isMember: boolean;
+    role: 'owner' | 'member' | null;
 }
 
 export interface ApiComment {
@@ -35,6 +36,7 @@ export interface ApiItem {
     category: string | null;
     region: string | null;
     url: string | null;
+    address: string | null;
     imageUrl: string | null;
     note: string | null;
     createdBy: string | null;
@@ -103,8 +105,19 @@ export const getItems = (listId: string) =>
 
 export const addItem = (
     listId: string,
-    input: { title: string; category?: ItemCategory; region?: string; url?: string; note?: string },
+    input: {
+        title: string;
+        category?: ItemCategory;
+        region?: string;
+        url?: string;
+        address?: string;
+        note?: string;
+    },
 ) => api<{ item: ApiItem }>('list-items', 'POST', { listId, ...input });
+
+/** Remove an item (allowed for the item author or a list owner). */
+export const deleteItem = (itemId: string) =>
+    api<{ success: boolean }>('list-items', 'DELETE', { itemId });
 
 /** Toggle my 🐙 approval on an item; returns the new state. */
 export const toggleApproval = (itemId: string) =>

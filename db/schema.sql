@@ -58,6 +58,8 @@ create table if not exists items (
 -- (og:image) from the item's link when present.
 alter table items add column if not exists region text;
 alter table items add column if not exists image_url text;
+-- precise address, linked to Google Maps in the detail view
+alter table items add column if not exists address text;
 
 -- ─────────────────────────────────────────────────────────────
 -- reactions — freeform emoji. PK(item,user,emoji): a user may add

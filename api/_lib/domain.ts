@@ -18,9 +18,10 @@ export interface List {
     createdAt: string;
 }
 
-/** List annotated with whether the requesting user belongs to it. */
+/** List annotated with the requesting user's membership + role. */
 export interface ListWithMembership extends List {
     isMember: boolean;
+    role: MemberRole | null;
 }
 
 export type MemberRole = 'owner' | 'member';
@@ -41,6 +42,7 @@ export interface Item {
     category: string | null;
     region: string | null;
     url: string | null;
+    address: string | null;
     imageUrl: string | null;
     note: string | null;
     createdBy: string | null;

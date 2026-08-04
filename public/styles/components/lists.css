@@ -281,10 +281,23 @@ dialog::backdrop {
     margin: 0;
 }
 
-.detail-url {
+.detail-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.detail-url,
+.detail-map {
     color: var(--primary-color);
     font-size: 0.85em;
     word-break: break-all;
+}
+
+.ghost-button.danger {
+    border-color: var(--error-color);
+    color: var(--error-color);
+    margin-top: 0.4rem;
 }
 
 .approve-row {

@@ -119,7 +119,8 @@
                     <option value="other" selected>📍 Other</option>
                 </select>
                 <input type="text" id="add-item-region" placeholder="Region (e.g. Hokkaido, Nagano)">
-                <input type="url" id="add-item-url" placeholder="Link (optional — we'll grab its image)">
+                <input type="url" id="add-item-url" placeholder="Website (optional — we'll grab its image)">
+                <input type="text" id="add-item-address" placeholder="Address (optional — links to Google Maps)">
                 <textarea id="add-item-note" placeholder="Description (optional)" rows="3" maxlength="2000"></textarea>
                 <p id="add-item-error" class="error hidden"></p>
                 <div class="dialog-actions">
@@ -136,7 +137,10 @@
                 <h2 id="detail-title"></h2>
                 <p class="detail-region" id="detail-region"></p>
                 <p class="detail-note" id="detail-note"></p>
-                <a class="detail-url" id="detail-url" target="_blank" rel="noopener noreferrer"></a>
+                <div class="detail-links">
+                    <a class="detail-url" id="detail-url" target="_blank" rel="noopener noreferrer"></a>
+                    <a class="detail-map" id="detail-map" target="_blank" rel="noopener noreferrer"></a>
+                </div>
                 <div class="approve-row">
                     <button class="approve-button" id="detail-approve">🐙 <span id="detail-approve-count"></span></button>
                     <span class="approve-who" id="detail-who"></span>
@@ -147,6 +151,7 @@
                     <input type="text" id="detail-comment-input" placeholder="Say something…" maxlength="2000">
                     <button id="detail-comment-post">Post</button>
                 </div>
+                <button class="ghost-button danger hidden" id="detail-remove">Remove from list</button>
             </div>
         </dialog>
 
