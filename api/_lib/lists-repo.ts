@@ -47,6 +47,14 @@ export async function isMember(listId: string, userId: string): Promise<boolean>
     return rows.length > 0;
 }
 
+/** Membership check routed through an item (for reaction/comment endpoints). */
+export async function isMemberOfItem(itemId: string, userId: string): Promise<boolean> {
+    const { rows } = await sql`
+        SELECT 1 FROM items i JOIN list_members m ON m.list_id = i.list_id
+        WHERE i.id = ${itemId} AND m.user_id = ${userId} LIMIT 1`;
+    return rows.length > 0;
+}
+
 // ── items ──────────────────────────────────────────────────────────
 export async function addItem(
     listId: string,

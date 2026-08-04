@@ -30,9 +30,9 @@
         "vitest": "^4.1.10"
     },
     "dependencies": {
+        "@neondatabase/serverless": "^1.1.0",
         "@upstash/redis": "^1.34.6",
         "@vercel/kv": "^0.2.4",
-        "@vercel/postgres": "^0.10.0",
         "jose": "^6.2.8"
     }
 }
