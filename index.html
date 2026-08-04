@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-style="washi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Squat With Me</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
@@ -15,7 +18,7 @@
         </button>
 
         <div id="auth-screen" class="hidden">
-            <img src="/assets/images/squat.png" alt="Squat With Me" class="setup-image" />
+            <img src="/assets/images/cat-butt.svg" alt="A very round cat, seen from behind" class="setup-image" />
             <h2>Welcome to Squat With Me!</h2>
             <div id="login-form">
                 <p>Friends-only — sign in to get squatting.</p>
@@ -48,8 +51,9 @@
         <div id="main-app" class="hidden">
             <header>
                 <div class="header-content">
-                    <h1>Squat With Me</h1>
-                    <p id="subtitle">Cuz everything's better with friends...</p>
+                    <h1><span class="hanko">大尻</span>Squat With Me</h1>
+                    <p id="subtitle">Cuz everything's better with friends…</p>
+                    <p class="jp-subtitle">一緒にスクワット</p>
                 </div>
             </header>
 
@@ -60,6 +64,7 @@
             </div>
 
             <div id="user-input">
+                <img src="/assets/images/cat-butt.svg" alt="" class="mascot-small" />
                 <p class="user-input-text">Squat with <span id="active-users">0</span> others today!</p>
                 <button id="squat-button">I Squat Today! 🏋️‍♂️</button>
                 <div id="squat-status" class="hidden"></div>

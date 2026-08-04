@@ -124,3 +124,20 @@
         font-size: 0.9em;
     }
 }
+
+.mascot-small {
+    width: 96px;
+    height: auto;
+    margin-bottom: -6px;
+}
+
+@keyframes butt-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-2.5deg) scale(1.03); }
+    75% { transform: rotate(2.5deg) scale(1.03); }
+}
+
+#squat-button:hover {
+    animation: butt-wiggle 0.45s ease-in-out infinite;
+    background-color: var(--secondary-color);
+}

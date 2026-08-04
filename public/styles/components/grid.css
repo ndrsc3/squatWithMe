@@ -71,20 +71,26 @@
     background-color: var(--grid-bg-color);
 }
 
+/* Hanko-stamp squat mark */
 .squatted {
-    background-color: var(--primary-color);
+    background-color: var(--surface-color);
     color: var(--surface-color);
     font-weight: bold;
+    background-image: radial-gradient(
+        circle at center,
+        var(--primary-color) 0 62%,
+        transparent 63%
+    );
 }
 
 .today {
-    border: 2px solid #2196f3;
+    border: 2px solid var(--indigo-color);
 }
 
 .day-of-week {
     display: block;
     font-size: 0.7em;
-    color: #666;
+    opacity: 0.6;
     margin-top: 2px;
 }
 
@@ -92,7 +98,7 @@
     grid-column: 1 / -1;
     text-align: center;
     padding: 20px;
-    color: #666;
+    opacity: 0.6;
 }
 
 @media (max-width: 768px) {

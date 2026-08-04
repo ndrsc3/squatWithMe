@@ -1,43 +1,28 @@
-:root {
-    --light-primary: #4CAF50;
-    --light-secondary: #45a049;
-    --light-background: #f4f4f4;
-    --light-surface: #ffffff;
-    --light-text: #333333;
-    --light-border: #eeeeee;
-    --light-grid-bg: #f0f0f0;
-    --light-header-bg: #e0e0e0;
-    --light-error: #dc3545;
-
-    --dark-primary: #66bb6a;
-    --dark-secondary: #4caf50;
-    --dark-background: #121212;
-    --dark-surface: #1e1e1e;
-    --dark-text: #e0e0e0;
-    --dark-border: #333333;
-    --dark-grid-bg: #262626;
-    --dark-header-bg: #2d2d2d;
-    --dark-error: #f44336;
-
-    --primary-color: var(--dark-primary);
-    --secondary-color: var(--dark-secondary);
-    --background-color: var(--dark-background);
-    --surface-color: var(--dark-surface);
-    --text-color: var(--dark-text);
-    --border-color: var(--dark-border);
-    --grid-bg-color: var(--dark-grid-bg);
-    --header-bg-color: var(--dark-header-bg);
-    --error-color: var(--dark-error);
+/* Bridge: legacy app variable names → the vendored washi style guide (--sg-* roles,
+   see base/washi.css). App-specific extras (border/grid/peach/error) live here.
+   Theming: guide tokens are light-dark() pairs; the theme toggle flips color-scheme
+   (dark default — ink night; .light-theme → washi day). */
+:root[data-style='washi'] {
+    color-scheme: dark;
 }
 
-:root.light-theme {
-    --primary-color: var(--light-primary);
-    --secondary-color: var(--light-secondary);
-    --background-color: var(--light-background);
-    --surface-color: var(--light-surface);
-    --text-color: var(--light-text);
-    --border-color: var(--light-border);
-    --grid-bg-color: var(--light-grid-bg);
-    --header-bg-color: var(--light-header-bg);
-    --error-color: var(--light-error);
+:root[data-style='washi'].light-theme {
+    color-scheme: light;
+}
+
+:root {
+    --primary-color: var(--sg-accent);
+    --secondary-color: light-dark(#a83a24, #c8452c);
+    --background-color: var(--sg-bg);
+    --surface-color: var(--sg-surface);
+    --text-color: var(--sg-ink);
+    --border-color: light-dark(#e3d8c2, #3b342b);
+    --grid-bg-color: light-dark(#ede4d0, #2b2620);
+    --header-bg-color: light-dark(#e8ddc6, #322c24);
+    --error-color: light-dark(#b3402e, #e57357);
+    --peach-color: light-dark(#f6b78f, #d99771);
+    --indigo-color: var(--sg-accent-2);
+
+    --font-display: var(--sg-font-display);
+    --font-body: var(--sg-font-body);
 }

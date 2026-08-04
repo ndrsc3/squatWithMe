@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 230" role="img" aria-label="A very round cat, seen from behind">
+  <g stroke="#3a2f28" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- tail -->
+    <path d="M192 142 C230 130 240 88 210 66 C196 56 180 62 182 76" fill="none"/>
+    <!-- torso (mostly hidden behind the situation) -->
+    <path d="M120 62 C84 62 82 108 90 134 L150 134 C158 108 156 62 120 62 Z" fill="#f9ecd7"/>
+    <!-- the situation -->
+    <circle cx="86" cy="152" r="56" fill="#f6b78f"/>
+    <circle cx="154" cy="152" r="56" fill="#f6b78f"/>
+    <path d="M120 120 L120 190" fill="none"/>
+    <!-- back paws -->
+    <ellipse cx="60" cy="204" rx="17" ry="9" fill="#f9ecd7"/>
+    <ellipse cx="180" cy="204" rx="17" ry="9" fill="#f9ecd7"/>
+    <!-- head + ears -->
+    <circle cx="120" cy="50" r="31" fill="#f9ecd7"/>
+    <path d="M99 30 L92 7 L115 20 Z" fill="#f9ecd7"/>
+    <path d="M141 30 L148 7 L125 20 Z" fill="#f9ecd7"/>
+  </g>
+  <!-- blush -->
+  <ellipse cx="56" cy="148" rx="11" ry="6" fill="#e0704f" opacity="0.55"/>
+  <ellipse cx="184" cy="148" rx="11" ry="6" fill="#e0704f" opacity="0.55"/>
+</svg>
