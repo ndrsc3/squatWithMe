@@ -1,7 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUser } from './_lib/auth';
+import type { ItemCategory } from './_lib/domain';
 import { allowMethods } from './_lib/http';
 import { addItem, getListItems, isMember } from './_lib/lists-repo';
+import { fetchOgImage } from './_lib/og';
+
+const CATEGORIES: ItemCategory[] = ['resort', 'onsen', 'food', 'other'];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!allowMethods(req, res, 'GET', 'POST')) return;
@@ -19,10 +23,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ items: await getListItems(listId) });
         }
 
-        const { listId, title, category, url, note } = (req.body ?? {}) as {
+        const { listId, title, category, region, url, note } = (req.body ?? {}) as {
             listId?: string;
             title?: string;
             category?: string;
+            region?: string;
             url?: string;
             note?: string;
         };
@@ -34,12 +39,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!(await isMember(listId, session.userId))) {
             return res.status(403).json({ error: 'Not a member of this list' });
         }
+
+        const itemCategory: ItemCategory = CATEGORIES.includes(category as ItemCategory)
+            ? (category as ItemCategory)
+            : 'other';
+        const itemUrl = url?.trim() || null;
+        const imageUrl = itemUrl ? await fetchOgImage(itemUrl) : null;
+
         const item = await addItem(
             listId,
             {
                 title: itemTitle,
-                category: category?.trim() || null,
-                url: url?.trim() || null,
+                category: itemCategory,
+                region: region?.trim() || null,
+                url: itemUrl,
+                imageUrl,
                 note: note?.trim() || null,
             },
             session.userId,

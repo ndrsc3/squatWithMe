@@ -84,7 +84,7 @@
             </div>
 
             <div id="lists-section">
-                <h2>📝 Shared Lists</h2>
+                <h2>The Lists</h2>
                 <div id="lists-container"></div>
                 <div class="new-list-form">
                     <input type="text" id="new-list-name" placeholder="New list name…" maxlength="120">
@@ -100,18 +100,57 @@
 
         <div id="list-detail" class="hidden">
             <a href="#" class="back-link">← Back to home</a>
-            <h2 id="list-title"></h2>
-            <div id="add-item-form" class="hidden">
-                <input type="text" id="add-item-title" placeholder="Add something… (title)" maxlength="200">
-                <input type="text" id="add-item-category" placeholder="Category (e.g. resort / onsen / food)">
-                <input type="url" id="add-item-url" placeholder="Link (optional)">
-                <input type="text" id="add-item-note" placeholder="Note (optional)">
-                <button id="add-item-submit" class="primary-button">+ Add to list</button>
+            <div class="list-head">
+                <h2 id="list-title"></h2>
+                <button id="add-item-open" class="primary-button hidden">+ Add to the list</button>
             </div>
+            <div id="list-filters"></div>
             <div id="items-container"></div>
         </div>
-    </div>
-    <footer class="app-footer">
+
+        <dialog id="add-dialog">
+            <div class="dialog-inner">
+                <h2>Add to the list</h2>
+                <input type="text" id="add-item-title" placeholder="Title" maxlength="200">
+                <select id="add-item-category">
+                    <option value="resort">🏔️ Resort</option>
+                    <option value="onsen">♨️ Onsen</option>
+                    <option value="food">🍜 Food</option>
+                    <option value="other" selected>📍 Other</option>
+                </select>
+                <input type="text" id="add-item-region" placeholder="Region (e.g. Hokkaido, Nagano)">
+                <input type="url" id="add-item-url" placeholder="Link (optional — we'll grab its image)">
+                <textarea id="add-item-note" placeholder="Description (optional)" rows="3" maxlength="2000"></textarea>
+                <p id="add-item-error" class="error hidden"></p>
+                <div class="dialog-actions">
+                    <button id="add-item-cancel" class="ghost-button">Cancel</button>
+                    <button id="add-item-submit" class="primary-button">Add it</button>
+                </div>
+            </div>
+        </dialog>
+
+        <dialog id="item-dialog">
+            <button class="dialog-close" id="item-dialog-close">✕</button>
+            <div class="detail-imgbox" id="detail-imgbox"><span></span></div>
+            <div class="dialog-inner">
+                <h2 id="detail-title"></h2>
+                <p class="detail-region" id="detail-region"></p>
+                <p class="detail-note" id="detail-note"></p>
+                <a class="detail-url" id="detail-url" target="_blank" rel="noopener noreferrer"></a>
+                <div class="approve-row">
+                    <button class="approve-button" id="detail-approve">🐙 <span id="detail-approve-count"></span></button>
+                    <span class="approve-who" id="detail-who"></span>
+                </div>
+                <div class="detail-comments" id="detail-comments"></div>
+                <button class="ghost-button" id="detail-comment-btn">💬 Add a comment</button>
+                <div class="comment-composer hidden" id="detail-composer">
+                    <input type="text" id="detail-comment-input" placeholder="Say something…" maxlength="2000">
+                    <button id="detail-comment-post">Post</button>
+                </div>
+            </div>
+        </dialog>
+
+        <footer class="app-footer">
         <div class="footer-content">
             <div class="footer-links" >
                 <a href="https://x.com/_Uniquo_" target="_blank" rel="noopener noreferrer">
@@ -138,7 +177,8 @@
                 <p>Made with ❤️ for my squat community</p>
             </div>
         </div>
-    </footer>
+        </footer>
+    </div>
     <script type="module" src="/src/main.ts"></script>
 </body>
 </html> 

@@ -21,20 +21,25 @@ export interface ApiComment {
     id: string;
     itemId: string;
     userId: string | null;
+    username: string | null;
     body: string;
     createdAt: string;
 }
+
+export type ItemCategory = 'resort' | 'onsen' | 'food' | 'other';
 
 export interface ApiItem {
     id: string;
     listId: string;
     title: string;
     category: string | null;
+    region: string | null;
     url: string | null;
+    imageUrl: string | null;
     note: string | null;
     createdBy: string | null;
     createdAt: string;
-    reactions: Array<{ emoji: string; userId: string }>;
+    approvals: Array<{ userId: string; username: string }>;
     comments: ApiComment[];
 }
 
@@ -98,14 +103,12 @@ export const getItems = (listId: string) =>
 
 export const addItem = (
     listId: string,
-    input: { title: string; category?: string; url?: string; note?: string },
+    input: { title: string; category?: ItemCategory; region?: string; url?: string; note?: string },
 ) => api<{ item: ApiItem }>('list-items', 'POST', { listId, ...input });
 
-export const addReaction = (itemId: string, emoji: string) =>
-    api<{ success: boolean }>('item-reactions', 'POST', { itemId, emoji });
-
-export const removeReaction = (itemId: string, emoji: string) =>
-    api<{ success: boolean }>('item-reactions', 'DELETE', { itemId, emoji });
+/** Toggle my 🐙 approval on an item; returns the new state. */
+export const toggleApproval = (itemId: string) =>
+    api<{ approved: boolean }>('item-reactions', 'POST', { itemId });
 
 export const addComment = (itemId: string, body: string) =>
     api<{ comment: ApiComment }>('item-comments', 'POST', { itemId, body });

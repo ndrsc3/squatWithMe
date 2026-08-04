@@ -21,14 +21,14 @@ h1 {
     align-items: center;
     justify-content: center;
     writing-mode: vertical-rl;
-    width: 1.4em;
-    height: 1.4em;
+    padding: 0.3em 0.22em;
+    line-height: 1;
     background: var(--primary-color);
     color: var(--surface-color);
     border-radius: 6px;
     font-size: 0.5em;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     transform: rotate(-6deg);
     flex: none;
 }

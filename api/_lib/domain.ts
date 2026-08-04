@@ -32,34 +32,35 @@ export interface ListMember {
     addedAt: string;
 }
 
+export type ItemCategory = 'resort' | 'onsen' | 'food' | 'other';
+
 export interface Item {
     id: string;
     listId: string;
     title: string;
     category: string | null;
+    region: string | null;
     url: string | null;
+    imageUrl: string | null;
     note: string | null;
     createdBy: string | null;
     createdAt: string;
 }
 
-export interface Reaction {
-    itemId: string;
-    userId: string;
-    emoji: string;
-    createdAt: string;
-}
+/** Approvals are a single emoji (🐙) per user per item — see APPROVE_EMOJI. */
+export const APPROVE_EMOJI = '🐙';
 
 export interface Comment {
     id: string;
     itemId: string;
     userId: string | null;
+    username: string | null;
     body: string;
     createdAt: string;
 }
 
-/** Composite read shape for the list view: an item with its reactions + comments. */
+/** Composite read shape for the list view: an item with its approvals + comments. */
 export interface ItemWithMeta extends Item {
-    reactions: Array<{ emoji: string; userId: string }>;
+    approvals: Array<{ userId: string; username: string }>;
     comments: Comment[];
 }

@@ -34,3 +34,4 @@ Thumbs.db
 .vercel
 .env*.local
 .env*
+public/mockups/

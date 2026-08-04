@@ -59,57 +59,70 @@ export async function isMemberOfItem(itemId: string, userId: string): Promise<bo
 // ── items ──────────────────────────────────────────────────────────
 export async function addItem(
     listId: string,
-    input: { title: string; category?: string | null; url?: string | null; note?: string | null },
+    input: {
+        title: string;
+        category?: string | null;
+        region?: string | null;
+        url?: string | null;
+        imageUrl?: string | null;
+        note?: string | null;
+    },
     userId: string,
 ): Promise<Item> {
     const { rows } = await sql<Item>`
-        INSERT INTO items (list_id, title, category, url, note, created_by)
-        VALUES (${listId}, ${input.title}, ${input.category ?? null}, ${input.url ?? null},
-                ${input.note ?? null}, ${userId})
-        RETURNING id, list_id AS "listId", title, category, url, note,
-                  created_by AS "createdBy", created_at AS "createdAt"`;
+        INSERT INTO items (list_id, title, category, region, url, image_url, note, created_by)
+        VALUES (${listId}, ${input.title}, ${input.category ?? null}, ${input.region ?? null},
+                ${input.url ?? null}, ${input.imageUrl ?? null}, ${input.note ?? null}, ${userId})
+        RETURNING id, list_id AS "listId", title, category, region, url,
+                  image_url AS "imageUrl", note, created_by AS "createdBy", created_at AS "createdAt"`;
     const item = rows[0];
     if (!item) throw new Error('addItem: insert returned no row');
     return item;
 }
 
-/** Items in a list, each with its reactions + comments (stitched in JS — no array params). */
+/** Items in a list, each with its approvals + comments (stitched in JS — no array params). */
 export async function getListItems(listId: string): Promise<ItemWithMeta[]> {
     const { rows: items } = await sql<Item>`
-        SELECT id, list_id AS "listId", title, category, url, note,
-               created_by AS "createdBy", created_at AS "createdAt"
+        SELECT id, list_id AS "listId", title, category, region, url,
+               image_url AS "imageUrl", note, created_by AS "createdBy", created_at AS "createdAt"
         FROM items WHERE list_id = ${listId} ORDER BY created_at ASC`;
     if (items.length === 0) return [];
 
-    const { rows: reactions } = await sql<{ itemId: string; emoji: string; userId: string }>`
-        SELECT r.item_id AS "itemId", r.emoji, r.user_id AS "userId"
-        FROM reactions r JOIN items i ON i.id = r.item_id
+    const { rows: approvals } = await sql<{ itemId: string; userId: string; username: string }>`
+        SELECT r.item_id AS "itemId", r.user_id AS "userId", u.username
+        FROM reactions r
+        JOIN items i ON i.id = r.item_id
+        JOIN users u ON u.id = r.user_id
         WHERE i.list_id = ${listId}`;
 
     const { rows: comments } = await sql<Comment>`
-        SELECT c.id, c.item_id AS "itemId", c.user_id AS "userId", c.body, c.created_at AS "createdAt"
-        FROM comments c JOIN items i ON i.id = c.item_id
+        SELECT c.id, c.item_id AS "itemId", c.user_id AS "userId", u.username, c.body,
+               c.created_at AS "createdAt"
+        FROM comments c
+        JOIN items i ON i.id = c.item_id
+        LEFT JOIN users u ON u.id = c.user_id
         WHERE i.list_id = ${listId} ORDER BY c.created_at ASC`;
 
     const byItem = new Map<string, ItemWithMeta>(
-        items.map((i) => [i.id, { ...i, reactions: [], comments: [] }]),
+        items.map((i) => [i.id, { ...i, approvals: [], comments: [] }]),
     );
-    for (const r of reactions) byItem.get(r.itemId)?.reactions.push({ emoji: r.emoji, userId: r.userId });
+    for (const a of approvals) byItem.get(a.itemId)?.approvals.push({ userId: a.userId, username: a.username });
     for (const c of comments) byItem.get(c.itemId)?.comments.push(c);
     return items.map((i) => byItem.get(i.id) as ItemWithMeta);
 }
 
-// ── reactions (freeform emoji) ─────────────────────────────────────
-export async function addReaction(itemId: string, userId: string, emoji: string): Promise<void> {
+// ── approvals (single 🐙 per user per item) ────────────────────────
+/** Toggle the user's approval; returns the new state (true = now approved). */
+export async function toggleApproval(itemId: string, userId: string, emoji: string): Promise<boolean> {
+    const { rows } = await sql`
+        DELETE FROM reactions WHERE item_id = ${itemId} AND user_id = ${userId} AND emoji = ${emoji}
+        RETURNING 1 AS removed`;
+    if (rows.length > 0) return false;
     await sql`
         INSERT INTO reactions (item_id, user_id, emoji)
         VALUES (${itemId}, ${userId}, ${emoji})
         ON CONFLICT DO NOTHING`;
-}
-
-export async function removeReaction(itemId: string, userId: string, emoji: string): Promise<void> {
-    await sql`
-        DELETE FROM reactions WHERE item_id = ${itemId} AND user_id = ${userId} AND emoji = ${emoji}`;
+    return true;
 }
 
 // ── comments ───────────────────────────────────────────────────────
@@ -117,7 +130,9 @@ export async function addComment(itemId: string, userId: string, body: string): 
     const { rows } = await sql<Comment>`
         INSERT INTO comments (item_id, user_id, body)
         VALUES (${itemId}, ${userId}, ${body})
-        RETURNING id, item_id AS "itemId", user_id AS "userId", body, created_at AS "createdAt"`;
+        RETURNING id, item_id AS "itemId", user_id AS "userId",
+                  (SELECT username FROM users WHERE id = ${userId}) AS username,
+                  body, created_at AS "createdAt"`;
     const comment = rows[0];
     if (!comment) throw new Error('addComment: insert returned no row');
     return comment;

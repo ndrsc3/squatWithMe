@@ -1,8 +1,8 @@
-/* Shared Lists — overview + detail (functional pass; aesthetic wave is P4). */
+/* The Lists — overview, gallery detail page, dialogs (Gallery direction, 260804). */
 
 #lists-section {
     margin: 2rem auto;
-    max-width: 600px;
+    max-width: 640px;
     padding: 0 1rem;
 }
 
@@ -12,7 +12,7 @@
     justify-content: space-between;
     background: var(--surface-color);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
 }
@@ -28,14 +28,16 @@
 }
 
 .join-button,
-.comment-post,
-#new-list-create {
+#new-list-create,
+#detail-comment-post {
     background: var(--primary-color);
-    color: #fff;
+    color: var(--surface-color);
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 0.4rem 0.9rem;
     cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 700;
 }
 
 .lists-empty {
@@ -43,28 +45,28 @@
     opacity: 0.7;
 }
 
-.new-list-form,
-.comment-composer {
+.new-list-form {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.75rem;
 }
 
-.new-list-form input,
-.comment-input,
-#add-item-form input {
+.new-list-form input {
     flex: 1;
     background: var(--surface-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 0.5rem 0.75rem;
+    font-family: var(--font-body);
 }
 
+/* ── detail page ─────────────────────────────────────────────── */
 #list-detail {
-    max-width: 600px;
+    max-width: 760px;
     margin: 1.5rem auto;
     padding: 0 1rem;
+    text-align: left;
 }
 
 .back-link {
@@ -72,95 +74,272 @@
     text-decoration: none;
 }
 
-#add-item-form {
+.list-head {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 1rem 0 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#list-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 0.75rem 0 1rem;
+}
+
+.filter-chip {
+    font-family: var(--font-body);
+    font-size: 0.85em;
+    cursor: pointer;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+}
+
+.filter-chip.on {
+    background: var(--indigo-color);
+    border-color: var(--indigo-color);
+    color: var(--surface-color);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
 }
 
 .item-card {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.item-header {
+.item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+}
+
+.card-imgbox {
+    height: 110px;
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
-.item-title {
+.card-imgbox img,
+.detail-imgbox img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-imgbox span {
+    font-size: 2.2em;
+}
+
+.card-body {
+    padding: 10px 12px 12px;
+}
+
+.card-title {
     font-weight: 700;
 }
 
-.item-category {
-    font-size: 0.8rem;
-    background: var(--grid-bg-color);
-    border-radius: 999px;
-    padding: 0.1rem 0.6rem;
+.card-region {
+    font-size: 0.78em;
+    color: var(--indigo-color);
+    margin: 2px 0 6px;
 }
 
-.item-url {
-    display: block;
-    color: var(--primary-color);
-    font-size: 0.85rem;
-    word-break: break-all;
-    margin-top: 0.25rem;
+.card-blurb {
+    font-size: 0.82em;
+    opacity: 0.75;
+    margin: 0 0 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.item-note {
-    margin: 0.4rem 0 0;
-    font-size: 0.9rem;
+.card-counts {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85em;
     opacity: 0.85;
 }
 
-.reactions-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-    margin-top: 0.6rem;
-}
-
-.reaction-chip {
-    background: var(--grid-bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 999px;
-    padding: 0.2rem 0.6rem;
-    cursor: pointer;
-}
-
-.reaction-chip.mine {
-    border-color: var(--primary-color);
-    background: color-mix(in srgb, var(--primary-color) 20%, transparent);
-}
-
-.emoji-input {
-    width: 3.5rem;
-    text-align: center;
+/* ── dialogs ─────────────────────────────────────────────────── */
+dialog {
+    border: none;
+    border-radius: 16px;
+    padding: 0;
     background: var(--surface-color);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 999px;
-    padding: 0.2rem 0.4rem;
+    width: min(480px, calc(100vw - 32px));
+    overflow: hidden;
 }
 
-.comments-block {
-    margin-top: 0.75rem;
+dialog::backdrop {
+    background: rgb(0 0 0 / 0.55);
+}
+
+.dialog-inner {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    text-align: left;
+}
+
+.dialog-inner h2 {
+    margin: 0;
+}
+
+.dialog-inner input,
+.dialog-inner select,
+.dialog-inner textarea {
+    font-family: var(--font-body);
+    font-size: 1em;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+.dialog-inner input:focus,
+.dialog-inner select:focus,
+.dialog-inner textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.ghost-button {
+    font-family: var(--font-body);
+    cursor: pointer;
+    font-size: 0.9em;
+    border-radius: 999px;
+    padding: 6px 14px;
+    border: 1.5px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+    align-self: flex-start;
+}
+
+.dialog-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: rgb(0 0 0 / 0.35);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 1em;
+    z-index: 1;
+}
+
+.detail-imgbox {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.detail-imgbox span {
+    font-size: 3.2em;
+}
+
+.detail-region {
+    color: var(--indigo-color);
+    font-size: 0.85em;
+    margin: 0;
+}
+
+.detail-note {
+    font-size: 0.92em;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.detail-url {
+    color: var(--primary-color);
+    font-size: 0.85em;
+    word-break: break-all;
+}
+
+.approve-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0.3rem 0;
+}
+
+.approve-button {
+    font-family: var(--font-body);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1em;
+    border-radius: 999px;
+    padding: 8px 18px;
+    border: 1.5px solid var(--primary-color);
+    background: transparent;
+    color: var(--text-color);
+}
+
+.approve-button.mine {
+    background: var(--primary-color);
+    color: var(--surface-color);
+}
+
+.approve-who {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+.detail-comments {
     border-top: 1px solid var(--border-color);
     padding-top: 0.6rem;
 }
 
-.comment {
-    margin: 0.25rem 0;
-    font-size: 0.9rem;
+.detail-comment {
+    font-size: 0.88em;
+    margin: 6px 0;
 }
 
+.detail-comment b {
+    color: var(--indigo-color);
+}
+
+.comment-composer {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.comment-composer input {
+    flex: 1;
+}
+
+/* ── user bar + footer integration ───────────────────────────── */
 .user-bar {
     display: flex;
     align-items: center;
@@ -175,5 +354,6 @@
     color: var(--primary-color);
     cursor: pointer;
     text-decoration: underline;
-    font-size: 0.9rem;
+    font-size: 0.9em;
+    font-family: var(--font-body);
 }

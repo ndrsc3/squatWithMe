@@ -6,7 +6,7 @@ import {
     renderListsOverview,
     initListCreate,
     renderListDetail,
-    initAddItemForm,
+    initListDetailUI,
 } from './views/lists';
 
 /**
@@ -25,7 +25,7 @@ export class SquatApp {
 
         initAuthScreen((user) => void this.enterApp(user));
         initListCreate();
-        initAddItemForm(() =>
+        initListDetailUI(() =>
             this.currentListId && this.user ? { listId: this.currentListId, myUserId: this.user.id } : null,
         );
         window.addEventListener('hashchange', () => void this.route());

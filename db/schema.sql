@@ -54,6 +54,11 @@ create table if not exists items (
     created_at timestamptz not null default now()
 );
 
+-- 260804 Gallery redesign: region shown on card face; image_url autopulled
+-- (og:image) from the item's link when present.
+alter table items add column if not exists region text;
+alter table items add column if not exists image_url text;
+
 -- ─────────────────────────────────────────────────────────────
 -- reactions — freeform emoji. PK(item,user,emoji): a user may add
 -- several different emojis to an item, but not the same one twice.

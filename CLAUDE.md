@@ -4,104 +4,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**squatWithMe** — a group squat accountability app. Users commit to 100 squats/day and track each other on a shared leaderboard. Single-page app with a serverless backend. Deployed on Vercel.
+**squatWithMe V2** — a friends-only accountability app: commit to 100 squats/day on a shared leaderboard, and plan the group trip on collaborative Lists (add items, approve, comment). First list: the Feb 2027 Japan snowboard trip. Vanilla TypeScript + Vite SPA, Vercel serverless API, Neon Postgres. Whole site is login-gated (JWT).
+
+Active branch: `v2` (main still serves the legacy V1 app until promotion).
+Plan of record: `_underScore/work/plans/active/260803-squat-with-me-v2.md`.
 
 ## Commands
 
 ```bash
-# Development
-npm run dev            # Vite dev server at localhost:5173
-npx vercel dev         # Local dev with Vercel serverless functions
-
-# Production build
-npm run build          # Vite build → dist/
-
-# Preview built output
-npm run preview        # Serve dist/ locally with Vite preview
-
-# Lint / Format
+npm run dev            # Vite dev server (frontend only, no API)
+npx vercel dev         # Full local dev: frontend + serverless functions (use this)
+npm run typecheck      # tsc --noEmit
 npm run lint           # ESLint on src/ api/ vite.config.ts
-npm run format         # Prettier --write on all source files
+npm test               # vitest (streak + auth unit tests)
+npm run build          # Vite build → dist/
+node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent)
 ```
+
+**The floor:** typecheck + lint + test + build must be green before any commit. CI (`.github/workflows/ci.yml`) enforces the same four on push (main, v2) + PRs.
 
 ## Architecture
 
-**Flat structure** — no monorepo. All source at project root.
-
-### Frontend
-
-- **Vanilla TypeScript/HTML/CSS** — no framework
-- `src/` — TypeScript source (bundled by Vite)
-- `public/` — static assets copied verbatim to `dist/` (styles, images)
-- `index.html` — single entry point
-- `dist/` — Vercel output directory (do not edit directly)
-
-**Entry point:** `src/main.ts` — creates `SquatApp` on `DOMContentLoaded`.
-
-**Feature modules in `src/`:**
-- `app.ts` — `SquatApp` class, state, screen management, event wiring
-- `types.ts` — shared TypeScript interfaces
-- `kv-client.ts` — typed fetch wrappers for all API endpoints (with 5-min cache on `getUsers`)
-- `user.ts` — device fingerprinting, `setupUser()`, `recoverAccount()`
-- `squats.ts` — `recordSquat()`, `calculateStreak()`
-- `leaderboard.ts` — `renderGrid()` builds the DOM leaderboard grid
-
-**CSS in `public/styles/`** organized by: `base/` (variables, reset, typography), `components/` (buttons, grid, forms), `layout/` (header, footer).
+### Frontend (`src/`)
+- `main.ts` → `app.ts` — slim orchestrator: login gate (`auth-me` on boot), hash router (`#/list/<id>`), theme toggle
+- `views/auth.ts` — login/signup screen
+- `views/squat.ts` — squat tracker (button, stats, leaderboard grid)
+- `views/lists.ts` — lists overview + list detail (items, reactions, comments); renders user content via `textContent` only (XSS-safe) — keep it that way
+- `api-client.ts` — typed fetch wrappers for the whole API
+- `squats.ts` / `leaderboard.ts` — streak calc (unit-tested) + grid render
 
 ### Backend (`api/`)
+Vercel serverless functions, flat files. Shared plumbing in `api/_lib/`:
+`db.ts` (the ONLY Postgres seam — `@neondatabase/serverless`, keep provider swaps inside this file) · `auth.ts` (JWT via `jose`, scrypt passwords, `requireUser`) · `http.ts` (method guard, cookie helpers) · `domain.ts` (types) · `users-repo.ts` / `lists-repo.ts` / `squats-repo.ts` (typed data access).
 
-Vercel serverless functions (Node.js 20.x, TypeScript compiled by Vercel automatically):
-- `check-username.ts` — `POST /api/check-username` — checks username availability
-- `save-user.ts` — `POST /api/save-user` — creates new user
-- `record-squat.ts` — `POST /api/record-squat` — records today's squat
-- `get-users.ts` — `GET /api/get-users` — returns all active users with squat data
-- `recover-account.ts` — `POST /api/recover-account` — account recovery via secret answer
-- `remove-inactive.ts` — `POST /api/remove-inactive` — prunes inactive users (30-day threshold)
-- `_lib/storage.ts` — shared KV helpers (not an endpoint, not exposed by Vercel)
+Endpoints: `auth-signup/login/me/logout` · `lists` (GET all w/ membership, POST create) · `list-members` (POST join — open join, friends-trust) · `list-items` (GET/POST, member-gated) · `item-reactions` (POST/DELETE, freeform emoji) · `item-comments` (POST) · `get-users` + `record-squat` (squat tracker, session-authed).
 
-### Data Schema (KV keys)
+### Data (Postgres — Neon via Vercel Marketplace)
+Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list_members`, `items`, `reactions` (PK item+user+emoji), `comments`, `squats` (user+day). Generalized List primitive; squats table replaces the dead legacy KV store (suspended Upstash resource, disconnected 260804).
 
-| Key | Type | Description |
-|---|---|---|
-| `userIndex` | Hash | `{ usernameLower → userId }` |
-| `user:{userId}` | JSON | Full user record (username, recoveryHash, devices, lastActive) |
-| `activeUsers` | Set | Set of userId strings |
-| `squats:{YYYY-MM}:{userId}` | Set | Set of day-of-month integers (e.g. `{1, 5, 12}`) |
+## Environment
 
-### Routing (`vercel.json`)
+`.env.local` via `vercel env pull` (repo is linked to project `app-squatwithme`):
+- `DATABASE_URL` — injected by the Neon integration
+- `JWT_SECRET` — set in all three Vercel envs
 
-- `/api/*` → serverless functions
-- Everything else → filesystem (static output in `dist/`)
+## Styling — house system (do not freelance)
 
-## Environment Variables
-
-Required in `.env.local` for local Vercel dev:
-- `KV_REST_API_URL`
-- `KV_REST_API_TOKEN`
-- `VERCEL_KV_REST_API_URL`
-- `VERCEL_KV_REST_API_TOKEN`
-- `VERCEL_KV_REST_API_READ_ONLY_TOKEN`
+- Style guide: **washi** (`public/styles/base/washi.css` — VENDORED copy; canonical = `_underScore/knowledge/brand/guides/washi.css`, edit there first, mirror here). Components consume `--sg-*` roles through the bridge in `public/styles/base/variables.css` — never raw colors.
+- Theme: `light-dark()` tokens flipped via `color-scheme`; toggle sets `.light-theme` on `<html>`.
+- Design/styling work starts from `_underScore/knowledge/brand/` + `knowledge/web-stack.md` (§ Style guides, radar loop for new libs — vendor, don't hand-roll).
+- **Visual review** uses `_underScore/knowledge/web-visual-verification.md` (headless Brave recipe; note the `--virtual-time-budget` and mobile-width quirks documented there). Keeper shots → `_underScore/_artifacts/ui-smoke/squatwithme/`.
 
 ## Git Workflow
 
-Feature branches → main → Vercel auto-deploys on push to main.
-
-```bash
-git checkout -b feature/my-change
-# ... edit, build, validate ...
-git checkout main
-git merge feature/my-change
-git push origin main
-```
-
-Use `/ship` skill to walk through the validate → commit → push sequence.
-
-## Idea Pipeline
-
-```
-docs/explorations/   ← ideas at any stage
-docs/plans/          ← implementation plans
-docs/TASKS.md        ← actionable task board
-```
-
-Use `/backlog` at session start for orientation.
+Work on `v2`. Push → CI + Vercel preview (deployment-protected). Do not merge to `main` (= production deploy) without owner go-ahead. No auto-commit — floor green + owner approval per commit.
