@@ -67,16 +67,19 @@ export async function addItem(
         address?: string | null;
         imageUrl?: string | null;
         note?: string | null;
+        lat?: number | null;
+        lng?: number | null;
     },
     userId: string,
 ): Promise<Item> {
     const { rows } = await sql<Item>`
-        INSERT INTO items (list_id, title, category, region, url, address, image_url, note, created_by)
+        INSERT INTO items (list_id, title, category, region, url, address, image_url, note, lat, lng, created_by)
         VALUES (${listId}, ${input.title}, ${input.category ?? null}, ${input.region ?? null},
                 ${input.url ?? null}, ${input.address ?? null}, ${input.imageUrl ?? null},
-                ${input.note ?? null}, ${userId})
+                ${input.note ?? null}, ${input.lat ?? null}, ${input.lng ?? null}, ${userId})
         RETURNING id, list_id AS "listId", title, category, region, url, address,
-                  image_url AS "imageUrl", note, created_by AS "createdBy", created_at AS "createdAt"`;
+                  image_url AS "imageUrl", note, lat, lng, near_item_id AS "nearItemId",
+                  created_by AS "createdBy", created_at AS "createdAt"`;
     const item = rows[0];
     if (!item) throw new Error('addItem: insert returned no row');
     return item;
@@ -86,7 +89,8 @@ export async function addItem(
 export async function getListItems(listId: string): Promise<ItemWithMeta[]> {
     const { rows: items } = await sql<Item>`
         SELECT id, list_id AS "listId", title, category, region, url, address,
-               image_url AS "imageUrl", note, created_by AS "createdBy", created_at AS "createdAt"
+               image_url AS "imageUrl", note, lat, lng, near_item_id AS "nearItemId",
+               created_by AS "createdBy", created_at AS "createdAt"
         FROM items WHERE list_id = ${listId} ORDER BY created_at ASC`;
     if (items.length === 0) return [];
 
@@ -141,6 +145,21 @@ export async function canManageItem(itemId: string, userId: string): Promise<boo
 
 export async function deleteItem(itemId: string): Promise<void> {
     await sql`DELETE FROM items WHERE id = ${itemId}`;
+}
+
+/** Set/clear the manual near-override. Same-list constraint enforced when setting. */
+export async function setItemNear(itemId: string, nearItemId: string | null): Promise<boolean> {
+    if (nearItemId === null) {
+        await sql`UPDATE items SET near_item_id = NULL WHERE id = ${itemId}`;
+        return true;
+    }
+    const { rows } = await sql`
+        UPDATE items SET near_item_id = ${nearItemId}
+        WHERE id = ${itemId}
+          AND list_id = (SELECT list_id FROM items WHERE id = ${nearItemId})
+          AND id <> ${nearItemId}
+        RETURNING id`;
+    return rows.length > 0;
 }
 
 // ── comments ───────────────────────────────────────────────────────

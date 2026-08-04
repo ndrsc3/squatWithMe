@@ -1,5 +1,6 @@
 import * as apiClient from '../api-client';
 import type { ApiItem, ApiList, ItemCategory } from '../api-client';
+import { distanceKm, formatKm } from '../geo';
 
 // All user content is rendered via textContent — never innerHTML — so titles,
 // notes, and comments cannot inject markup.
@@ -29,6 +30,31 @@ const CATEGORY_ART: Record<string, [string, string]> = {
     other: ['linear-gradient(135deg, #9a8f7d, #6b6152)', '📍'],
 };
 const FILTERS: Array<'all' | ItemCategory> = ['all', 'resort', 'onsen', 'food', 'other'];
+
+/** Auto-near radius: items within this distance join a hub's orbit unless overridden. */
+const NEAR_RADIUS_KM = 30;
+
+function hasCoords(i: ApiItem): i is ApiItem & { lat: number; lng: number } {
+    return i.lat !== null && i.lng !== null;
+}
+
+/** A hub's orbit: manual overrides pointing at it + auto (unoverridden, within radius). */
+function orbitOf(hub: ApiItem): Array<{ item: ApiItem; km: number | null }> {
+    return currentItems
+        .filter((i) => i.id !== hub.id)
+        .flatMap((i) => {
+            if (i.nearItemId === hub.id) {
+                const km = hasCoords(i) && hasCoords(hub) ? distanceKm(i, hub) : null;
+                return [{ item: i, km }];
+            }
+            if (i.nearItemId === null && hasCoords(i) && hasCoords(hub)) {
+                const km = distanceKm(i, hub);
+                if (km <= NEAR_RADIUS_KM) return [{ item: i, km }];
+            }
+            return [];
+        })
+        .sort((a, b) => (a.km ?? Infinity) - (b.km ?? Infinity));
+}
 
 interface DetailContext {
     listId: string;
@@ -235,6 +261,8 @@ function fillItemDialog(item: ApiItem, context: DetailContext): void {
     const canRemove = currentListRole === 'owner' || item.createdBy === context.myUserId;
     remove.classList.toggle('hidden', !canRemove);
 
+    renderNearby(item, context);
+
     const mine = item.approvals.some((a) => a.userId === context.myUserId);
     const approve = document.getElementById('detail-approve')!;
     approve.classList.toggle('mine', mine);
@@ -255,6 +283,74 @@ function fillItemDialog(item: ApiItem, context: DetailContext): void {
     document.getElementById('detail-composer')!.classList.add('hidden');
     (document.getElementById('detail-comment-input') as HTMLInputElement).value = '';
     void context;
+}
+
+/** Proximity block in the detail dialog — hub orbit for resorts, near-hub line for the rest. */
+function renderNearby(item: ApiItem, context: DetailContext): void {
+    const box = document.getElementById('detail-nearby')!;
+    box.textContent = '';
+    const emojiOf = (i: ApiItem) => (CATEGORY_ART[i.category ?? 'other'] ?? CATEGORY_ART.other)[1];
+
+    if (item.category === 'resort') {
+        const orbit = orbitOf(item);
+        if (orbit.length === 0) return;
+        box.append(el('h3', 'nearby-heading', 'Nearby'));
+        for (const { item: near, km } of orbit) {
+            const row = el('button', 'nearby-row');
+            row.append(
+                el('span', undefined, `${emojiOf(near)} ${near.title}`),
+                el('span', 'nearby-km', km !== null ? formatKm(km) : 'attached'),
+            );
+            row.addEventListener('click', () => {
+                fillItemDialog(near, context);
+                openItemId = near.id;
+            });
+            box.append(row);
+        }
+        return;
+    }
+
+    // Non-hub: show nearest resort (computed or overridden) + the override selector.
+    const resorts = currentItems.filter((i) => i.category === 'resort' && i.id !== item.id);
+    if (resorts.length === 0) return;
+
+    const row = el('div', 'near-hub-row');
+    const overridden = item.nearItemId
+        ? resorts.find((r) => r.id === item.nearItemId)
+        : undefined;
+    const nearest = hasCoords(item)
+        ? resorts
+              .filter(hasCoords)
+              .map((r) => ({ r, km: distanceKm(item, r) }))
+              .sort((a, b) => a.km - b.km)[0]
+        : undefined;
+
+    const label = overridden
+        ? `🏔️ Near ${overridden.title} (set by hand)`
+        : nearest && nearest.km <= NEAR_RADIUS_KM
+          ? `🏔️ Near ${nearest.r.title} — ${formatKm(nearest.km)}`
+          : nearest
+            ? `🏔️ Nearest resort: ${nearest.r.title} — ${formatKm(nearest.km)}`
+            : '🏔️ No location found for this item';
+    row.append(el('span', 'near-hub-label', label));
+
+    const select = el('select', 'near-select') as HTMLSelectElement;
+    const autoOption = el('option', undefined, 'Auto (by distance)') as HTMLOptionElement;
+    autoOption.value = '';
+    select.append(autoOption);
+    for (const resort of resorts) {
+        const option = el('option', undefined, `Attach to ${resort.title}`) as HTMLOptionElement;
+        option.value = resort.id;
+        select.append(option);
+    }
+    select.value = item.nearItemId ?? '';
+    select.addEventListener('change', () => {
+        void apiClient
+            .setItemNear(item.id, select.value || null)
+            .then(() => renderListDetail(context.listId, context.myUserId));
+    });
+    row.append(select);
+    box.append(row);
 }
 
 /** One-time wiring for the two dialogs. `getContext` supplies the live list/user ids. */

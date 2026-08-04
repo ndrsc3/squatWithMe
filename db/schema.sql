@@ -61,6 +61,15 @@ alter table items add column if not exists image_url text;
 -- precise address, linked to Google Maps in the detail view
 alter table items add column if not exists address text;
 
+-- 260804 trip-planning geo layer: resorts are hubs; "near" is COMPUTED from
+-- coordinates (geocoded automatically at add-time via OSM Nominatim), so a
+-- weather-dynamic route never depends on hand-pinned tags. near_item_id is
+-- the manual override only (attach to a hub regardless of distance).
+alter table items add column if not exists near_item_id uuid references items(id) on delete set null;
+create index if not exists idx_items_near on items(near_item_id);
+alter table items add column if not exists lat double precision;
+alter table items add column if not exists lng double precision;
+
 -- ─────────────────────────────────────────────────────────────
 -- reactions — freeform emoji. PK(item,user,emoji): a user may add
 -- several different emojis to an item, but not the same one twice.

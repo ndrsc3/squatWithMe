@@ -2,17 +2,41 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUser } from './_lib/auth';
 import type { ItemCategory } from './_lib/domain';
 import { allowMethods } from './_lib/http';
-import { addItem, canManageItem, deleteItem, getListItems, isMember } from './_lib/lists-repo';
+import { buildGeoQuery, geocode } from './_lib/geo';
+import {
+    addItem,
+    canManageItem,
+    deleteItem,
+    getListItems,
+    isMember,
+    isMemberOfItem,
+    setItemNear,
+} from './_lib/lists-repo';
 import { fetchOgImage } from './_lib/og';
 
 const CATEGORIES: ItemCategory[] = ['resort', 'onsen', 'food', 'other'];
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (!allowMethods(req, res, 'GET', 'POST', 'DELETE')) return;
+    if (!allowMethods(req, res, 'GET', 'POST', 'PATCH', 'DELETE')) return;
 
     try {
         const session = await requireUser(req);
         if (!session) return res.status(401).json({ error: 'Not signed in' });
+
+        if (req.method === 'PATCH') {
+            // Manual near-override: attach/detach an item to a hub regardless of distance.
+            const { itemId, nearItemId } = (req.body ?? {}) as {
+                itemId?: string;
+                nearItemId?: string | null;
+            };
+            if (!itemId) return res.status(400).json({ error: 'itemId is required' });
+            if (!(await isMemberOfItem(itemId, session.userId))) {
+                return res.status(403).json({ error: 'Not a member of this list' });
+            }
+            const ok = await setItemNear(itemId, nearItemId ?? null);
+            if (!ok) return res.status(400).json({ error: 'Near target must be in the same list' });
+            return res.status(200).json({ success: true });
+        }
 
         if (req.method === 'DELETE') {
             const { itemId } = (req.body ?? {}) as { itemId?: string };
@@ -55,18 +79,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? (category as ItemCategory)
             : 'other';
         const itemUrl = url?.trim() || null;
-        const imageUrl = itemUrl ? await fetchOgImage(itemUrl) : null;
+        const itemRegion = region?.trim() || null;
+        const itemAddress = address?.trim() || null;
+        const [imageUrl, geo] = await Promise.all([
+            itemUrl ? fetchOgImage(itemUrl) : Promise.resolve(null),
+            geocode(buildGeoQuery({ address: itemAddress, title: itemTitle, region: itemRegion })),
+        ]);
 
         const item = await addItem(
             listId,
             {
                 title: itemTitle,
                 category: itemCategory,
-                region: region?.trim() || null,
+                region: itemRegion,
                 url: itemUrl,
-                address: address?.trim() || null,
+                address: itemAddress,
                 imageUrl,
                 note: note?.trim() || null,
+                lat: geo?.lat ?? null,
+                lng: geo?.lng ?? null,
             },
             session.userId,
         );

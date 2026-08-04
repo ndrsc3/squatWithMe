@@ -45,6 +45,10 @@ export interface Item {
     address: string | null;
     imageUrl: string | null;
     note: string | null;
+    lat: number | null;
+    lng: number | null;
+    /** Manual proximity override — attach to a hub item regardless of distance. */
+    nearItemId: string | null;
     createdBy: string | null;
     createdAt: string;
 }

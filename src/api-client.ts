@@ -39,6 +39,9 @@ export interface ApiItem {
     address: string | null;
     imageUrl: string | null;
     note: string | null;
+    lat: number | null;
+    lng: number | null;
+    nearItemId: string | null;
     createdBy: string | null;
     createdAt: string;
     approvals: Array<{ userId: string; username: string }>;
@@ -118,6 +121,10 @@ export const addItem = (
 /** Remove an item (allowed for the item author or a list owner). */
 export const deleteItem = (itemId: string) =>
     api<{ success: boolean }>('list-items', 'DELETE', { itemId });
+
+/** Set/clear the manual "near hub" override (null = back to automatic-by-distance). */
+export const setItemNear = (itemId: string, nearItemId: string | null) =>
+    api<{ success: boolean }>('list-items', 'PATCH', { itemId, nearItemId });
 
 /** Toggle my 🐙 approval on an item; returns the new state. */
 export const toggleApproval = (itemId: string) =>
