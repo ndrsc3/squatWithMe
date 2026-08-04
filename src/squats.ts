@@ -1,7 +1,7 @@
-import * as kvClient from './kv-client';
+import * as apiClient from './api-client';
 
-export async function recordSquat(userId: string, date: string): Promise<void> {
-    await kvClient.recordSquat(userId, date);
+export async function recordSquat(date: string): Promise<void> {
+    await apiClient.recordSquat(date);
 }
 
 export function calculateStreak(squats: Record<string, number[]>, today: string): number {

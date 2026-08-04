@@ -77,6 +77,17 @@ create table if not exists comments (
     created_at timestamptz not null default now()
 );
 
+-- ─────────────────────────────────────────────────────────────
+-- squats — one row per user per day squatted. Replaces the legacy
+-- KV store (suspended 2026-08; migrated with V2). May fold into the
+-- List primitive later as a deliberate move.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists squats (
+    user_id uuid not null references users(id) on delete cascade,
+    day     date not null,
+    primary key (user_id, day)
+);
+
 -- Indexes for the hot read paths (list view = items + reactions + comments).
 create index if not exists idx_items_list        on items(list_id);
 create index if not exists idx_reactions_item     on reactions(item_id);

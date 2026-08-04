@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUser } from './_lib/auth';
 import type { ListKind } from './_lib/domain';
 import { allowMethods } from './_lib/http';
-import { createList, getListsForUser } from './_lib/lists-repo';
+import { createList, getAllListsWithMembership } from './_lib/lists-repo';
 
 const KINDS: ListKind[] = ['travel', 'squat', 'generic'];
 
@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!session) return res.status(401).json({ error: 'Not signed in' });
 
         if (req.method === 'GET') {
-            return res.status(200).json({ lists: await getListsForUser(session.userId) });
+            return res.status(200).json({ lists: await getAllListsWithMembership(session.userId) });
         }
 
         const { name, kind } = (req.body ?? {}) as { name?: string; kind?: string };

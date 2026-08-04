@@ -18,6 +18,11 @@ export interface List {
     createdAt: string;
 }
 
+/** List annotated with whether the requesting user belongs to it. */
+export interface ListWithMembership extends List {
+    isMember: boolean;
+}
+
 export type MemberRole = 'owner' | 'member';
 
 export interface ListMember {

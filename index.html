@@ -14,37 +14,34 @@
             </svg>
         </button>
 
-        <div id="user-setup" class="hidden">
+        <div id="auth-screen" class="hidden">
             <img src="/assets/images/squat.png" alt="Squat With Me" class="setup-image" />
             <h2>Welcome to Squat With Me!</h2>
-            <div id="user-setup-form">
+            <div id="login-form">
+                <p>Friends-only — sign in to get squatting.</p>
+                <input type="text" id="login-username" placeholder="Username" autocomplete="username">
+                <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+                <button id="login-submit" class="primary-button">Sign In</button>
+                <p id="login-error" class="error hidden"></p>
+                <div class="recovery-link">
+                    <p>New here?</p>
+                    <a href="#" id="show-signup">Create an account</a>
+                </div>
+            </div>
+
+            <div id="signup-form" class="hidden">
                 <p>I want a big butt and I want you to have one too.</p>
-                <p>I'm committing to 100 squats a day.</p> 
-                <p>Join the committment and offer a lil' support to your friends!</p>
-                <input type="text" id="username" placeholder="Choose your username">
-                <button id="save-username">Start Squatting</button>
-                <p id="username-error" class="error hidden"></p>
+                <p>I'm committing to 100 squats a day.</p>
+                <p>Join the commitment and offer a lil' support to your friends!</p>
+                <input type="text" id="signup-username" placeholder="Choose your username" autocomplete="username">
+                <input type="password" id="signup-password" placeholder="Password (8+ characters)" autocomplete="new-password">
+                <input type="text" id="signup-displayname" placeholder="Display name (optional)">
+                <button id="signup-submit" class="primary-button">Start Squatting</button>
+                <p id="signup-error" class="error hidden"></p>
                 <div class="recovery-link">
                     <p>Already have an account?</p>
-                    <a href="#" id="show-recovery">Recover it here</a>
+                    <a href="#" id="show-login">Sign in</a>
                 </div>
-            </div>
-
-            <div id="recovery-code-display" class="hidden">
-                <!-- Recovery code will be displayed here -->
-            </div>
-
-            <div id="account-recovery" class="hidden">
-                <h3>Recover Your Account</h3>
-                <p>Enter your username to recover your account.</p>
-                <input type="text" id="recovery-username" placeholder="Your username">
-                <div id="recovery-code-container" class="hidden">
-                    <p id="recovery-question" class="fun-question">If you could shoot a liquid out of your index finger, what would it be?</p>
-                    <input type="password" id="recovery-answer" class="recovery-input" placeholder="Your answer..." autocomplete="new-password">
-                </div>
-                <button id="recover-account">Recover Account</button>
-                <p id="recovery-error" class="error hidden"></p>
-                <p class="recovery-link"><a href="#" id="show-signup">Back to signup</a></p>
             </div>
         </div>
 
@@ -71,7 +68,6 @@
             <div id="stats">
                 <div class="stats-list">
                     <h2>Your Stats</h2>
-                    <p class="stats-item">User: <span id="current-username">-</span></p>
                     <p class="stats-item">Streak: <span id="user-streak">0</span> days</p>
                     <!-- <p class="stats-item">Longest Streak: <span id="longest-streak">0</span> days by <span id="streak-holder">-</span></p> -->
                 </div>
@@ -81,6 +77,33 @@
                 <h2>Everyone's Stats</h2>
                 <div id="squat-grid"></div>
             </div>
+
+            <div id="lists-section">
+                <h2>📝 Shared Lists</h2>
+                <div id="lists-container"></div>
+                <div class="new-list-form">
+                    <input type="text" id="new-list-name" placeholder="New list name…" maxlength="120">
+                    <button id="new-list-create">Create</button>
+                </div>
+            </div>
+
+            <div class="user-bar">
+                <p class="stats-item">Signed in as <span id="current-username">-</span></p>
+                <button id="logout-button" class="link-button">Sign out</button>
+            </div>
+        </div>
+
+        <div id="list-detail" class="hidden">
+            <a href="#" class="back-link">← Back to home</a>
+            <h2 id="list-title"></h2>
+            <div id="add-item-form" class="hidden">
+                <input type="text" id="add-item-title" placeholder="Add something… (title)" maxlength="200">
+                <input type="text" id="add-item-category" placeholder="Category (e.g. resort / onsen / food)">
+                <input type="url" id="add-item-url" placeholder="Link (optional)">
+                <input type="text" id="add-item-note" placeholder="Note (optional)">
+                <button id="add-item-submit" class="primary-button">+ Add to list</button>
+            </div>
+            <div id="items-container"></div>
         </div>
     </div>
     <footer class="app-footer">

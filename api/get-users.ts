@@ -1,55 +1,31 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getActiveUserIds, getUser, getUserSquats } from './_lib/storage';
+import { requireUser } from './_lib/auth';
+import { allowMethods } from './_lib/http';
+import { getUsersWithSquats } from './_lib/squats-repo';
+
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    console.group('🔵 [API] Get Users');
-    if (req.method !== 'GET') {
-        console.warn('🟡 [API] Invalid method:', req.method);
-        console.groupEnd();
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+    if (!allowMethods(req, res, 'GET')) return;
 
     try {
-        const activeUserIds = await getActiveUserIds();
+        const session = await requireUser(req);
+        if (!session) return res.status(401).json({ error: 'Not signed in' });
 
-        const userPromises = activeUserIds.map((userId) => getUser(userId));
-        const users = await Promise.all(userPromises);
-
-        const now = new Date();
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const prevDate = new Date(now.setMonth(now.getMonth() - 1));
-        const previousMonth = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
-
-        const squatPromises = activeUserIds.flatMap((userId) => [
-            getUserSquats(userId, currentMonth),
-            getUserSquats(userId, previousMonth),
-        ]);
-        const squatResults = await Promise.all(squatPromises);
-
-        const userData = users.map((user, index) => {
-            const currentMonthSquats = squatResults[index * 2] || [];
-            const previousMonthSquats = squatResults[index * 2 + 1] || [];
-            return {
-                ...user,
-                squats: {
-                    [currentMonth]: currentMonthSquats,
-                    [previousMonth]: previousMonthSquats,
-                },
-            };
-        });
-
-        const activeUsers = userData.filter(Boolean);
-
-        console.debug('🔵 [API] Retrieved users:', {
-            count: activeUsers.length,
-            months: [currentMonth, previousMonth],
-        });
-
-        console.groupEnd();
-        res.status(200).json({ users: activeUsers });
+        // Client sends the window start (its local first-of-previous-month);
+        // fallback ~2 months back matches the V1 fetch window.
+        const since = typeof req.query.since === 'string' ? req.query.since : '';
+        let fromDay: string;
+        if (DAY_RE.test(since)) {
+            fromDay = since;
+        } else {
+            const d = new Date();
+            d.setMonth(d.getMonth() - 1, 1);
+            fromDay = d.toISOString().slice(0, 10);
+        }
+        res.status(200).json({ users: await getUsersWithSquats(fromDay) });
     } catch (error) {
-        console.error('🔴 [API] Error fetching users:', error);
-        console.groupEnd();
-        res.status(500).json({ error: 'Failed to fetch users' });
+        console.error('[api/get-users]', error);
+        res.status(500).json({ error: 'Failed to load users' });
     }
 }

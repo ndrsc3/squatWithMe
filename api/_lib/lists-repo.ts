@@ -1,5 +1,5 @@
 import { sql } from './db';
-import type { Comment, Item, ItemWithMeta, List, MemberRole } from './domain';
+import type { Comment, Item, ItemWithMeta, List, ListWithMembership, MemberRole } from './domain';
 
 // ── lists ──────────────────────────────────────────────────────────
 export async function createList(name: string, kind: string, ownerId: string): Promise<List> {
@@ -13,11 +13,12 @@ export async function createList(name: string, kind: string, ownerId: string): P
     return list;
 }
 
-export async function getListsForUser(userId: string): Promise<List[]> {
-    const { rows } = await sql<List>`
-        SELECT l.id, l.name, l.kind, l.created_by AS "createdBy", l.created_at AS "createdAt"
-        FROM lists l JOIN list_members m ON m.list_id = l.id
-        WHERE m.user_id = ${userId}
+/** Every list, flagged with the user's membership (site-wide friends-trust browse). */
+export async function getAllListsWithMembership(userId: string): Promise<ListWithMembership[]> {
+    const { rows } = await sql<ListWithMembership>`
+        SELECT l.id, l.name, l.kind, l.created_by AS "createdBy", l.created_at AS "createdAt",
+               (m.user_id IS NOT NULL) AS "isMember"
+        FROM lists l LEFT JOIN list_members m ON m.list_id = l.id AND m.user_id = ${userId}
         ORDER BY l.created_at DESC`;
     return rows;
 }
