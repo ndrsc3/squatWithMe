@@ -3,7 +3,7 @@
 @import './base/reset.css';
 @import './base/typography.css';
 @import './components/buttons.css';
-@import './components/grid.css';
+@import './components/stats.css';
 @import './components/forms.css';
 @import './components/lists.css';
 @import './layout/header.css';

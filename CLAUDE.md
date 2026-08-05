@@ -28,10 +28,10 @@ node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent)
 ### Frontend (`src/`)
 - `main.ts` → `app.ts` — slim orchestrator: login gate (`auth-me` on boot), hash router (`#/list/<id>`), theme toggle
 - `views/auth.ts` — login/signup screen
-- `views/squat.ts` — squat tracker (button, stats, leaderboard grid)
+- `views/squat.ts` — squat tracker (button, stats panels, refresh-on-focus)
 - `views/lists.ts` — lists overview + list detail (items, reactions, comments); renders user content via `textContent` only (XSS-safe) — keep it that way
 - `api-client.ts` — typed fetch wrappers for the whole API
-- `squats.ts` / `leaderboard.ts` — streak calc (unit-tested) + grid render
+- `squats.ts` / `leaderboard.ts` — streak/season calcs (unit-tested) + stats-panels render (You / Today / The Crew)
 
 ### Backend (`api/`)
 Vercel serverless functions, flat files. Shared plumbing in `api/_lib/`:

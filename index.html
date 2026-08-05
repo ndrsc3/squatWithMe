@@ -70,17 +70,32 @@
                 <div id="squat-status" class="hidden"></div>
             </div>
 
-            <div id="stats">
-                <div class="stats-list">
-                    <h2>Your Stats</h2>
-                    <p class="stats-item">Streak: <span id="user-streak">0</span> days</p>
-                    <!-- <p class="stats-item">Longest Streak: <span id="longest-streak">0</span> days by <span id="streak-holder">-</span></p> -->
+            <div class="stats-panel" id="stats-you">
+                <div class="panel-heading"><h2>You</h2><span class="jp-label">あなた</span></div>
+                <div class="you-hero">
+                    <div class="hero-big"><span id="user-streak">0</span><small>day streak</small></div>
+                    <div class="hero-side">
+                        <p class="you-status" id="you-status"></p>
+                        <div class="day-strip" id="you-strip"></div>
+                        <p class="hero-sub" id="you-month"></p>
+                    </div>
+                </div>
+                <div class="meter-wrap">
+                    <div class="meter-lbl"><b>Road to winter</b><span class="jp-label">冬まで</span></div>
+                    <div class="meter"><div class="meter-fill" id="winter-fill"></div></div>
+                    <p class="meter-sub" id="winter-sub"></p>
                 </div>
             </div>
 
-            <div id="grid-container">
-                <h2>Everyone's Stats</h2>
-                <div id="squat-grid"></div>
+            <div class="stats-panel" id="stats-today">
+                <div class="panel-heading"><h2>Today</h2><span class="jp-label">今日のみんな</span></div>
+                <div class="chips" id="today-chips"></div>
+                <p class="rollcall-sub" id="today-count"></p>
+            </div>
+
+            <div class="stats-panel" id="stats-crew">
+                <div class="panel-heading"><h2>The Crew</h2><span class="jp-label">みんなの記録</span></div>
+                <div id="crew-rows"></div>
             </div>
 
             <div id="lists-section">

@@ -11,7 +11,7 @@ _None_
 
 ## P2 — Next Up
 
-- [ ] [FEATURE] Stats redesign — implement mockup direction H (`public/mockups/stats.html`, gitignored) in `views/squat.ts`: personal hero + roll-call chips + crew heat-strips (date marks every 7 days), winter season-meter (squat-days banked since relaunch 260803 → Dec 1), dormant-fade (zero streak + quiet >7 days → dimmed + sorted last, never hidden). Data refresh: on window focus + after own squat.
+_None_
 
 ## P3 — Backlog
 
@@ -30,6 +30,7 @@ _None_
 
 ## Done
 
+- [x] [FEATURE] Stats redesign shipped 260804 — direction H (personal hero + winter season-meter from relaunch 260803, roll-call chips, crew heat-strips w/ 7-day date marks, dormant-fade) in `views/squat.ts` + `leaderboard.ts` + `components/stats.css`; refresh-on-focus; 15 new unit tests.
 - [x] Verify `npm run build` + `npx vercel dev` flows — V2 floor green + CI (260803)
 - [x] [DX] Reboot to TypeScript + Vite + ESLint + Prettier (matching web_bananaRodeo structure)
 - [x] [DX] Split monolithic `styles.css` into modular partials under `public/styles/`
