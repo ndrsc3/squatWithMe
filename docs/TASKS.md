@@ -1,6 +1,9 @@
 # Task Board
 
-_Last touched: 2026-03-17_
+_Last touched: 260804 · Plan of record: `_underScore/work/plans/active/260803-squat-with-me-v2.md`_
+
+Code-adjacent tasks only — phases, decisions, and design briefs live in the plan of record
+and `_underScore/work/explorations/260804-squat-with-me-uiux-redesign.md`.
 
 ## P1 — Blockers
 
@@ -8,19 +11,27 @@ _None_
 
 ## P2 — Next Up
 
-- [ ] [DX] Verify `npm run build` passes cleanly after reboot
-- [ ] [DX] Verify `npx vercel dev` local dev flow works end-to-end
-- [ ] [FEATURE] Wire WebSocket (`ws.ts`) to frontend for real-time leaderboard updates
+- [ ] [FEATURE] Stats redesign — implement mockup direction H (`public/mockups/stats.html`, gitignored) in `views/squat.ts`: personal hero + roll-call chips + crew heat-strips (date marks every 7 days), winter season-meter (squat-days banked since relaunch 260803 → Dec 1), dormant-fade (zero streak + quiet >7 days → dimmed + sorted last, never hidden). Data refresh: on window focus + after own squat.
 
 ## P3 — Backlog
 
 - [ ] [FEATURE] Offline squat sync (record while offline, sync on reconnect)
-- [ ] [FEATURE] Add toast notification system for feedback
-- [ ] [DX] Add `remove-inactive` cron job or Vercel scheduled function
+- [ ] [FEATURE] Toast notification system for feedback
+- [ ] [FEATURE] Map wave — Leaflet render of geocoded items (geo layer shipped 260804; map is rendering-only)
+- [ ] [FEATURE] Itinerary/corridor wave ("what's on the way A→B") — computable from existing coords
+
+## Parked
+
+- [ ] [FEATURE] WebSocket real-time leaderboard (`ws.ts` was deleted in P0) — decided 260804: refresh-on-focus covers a 6-person crew; revisit only if the roll-call needs to feel live.
+
+## Superseded
+
+- ~~remove-inactive cron~~ — superseded 260804 by the dormant-fade rule in the stats redesign (inactive users dim, never removed; no job needed).
 
 ## Done
 
+- [x] Verify `npm run build` + `npx vercel dev` flows — V2 floor green + CI (260803)
 - [x] [DX] Reboot to TypeScript + Vite + ESLint + Prettier (matching web_bananaRodeo structure)
 - [x] [DX] Split monolithic `styles.css` into modular partials under `public/styles/`
-- [x] [DX] Convert `api/*.js` to TypeScript with `api/_lib/storage.ts` shared helpers
+- [x] [DX] Convert `api/*.js` to TypeScript (V2 rebuilt the API on `api/_lib/` repos)
 - [x] [DX] Modularize `app.js` (1008 lines) into `src/` modules
