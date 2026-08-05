@@ -81,9 +81,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const itemUrl = url?.trim() || null;
         const itemRegion = region?.trim() || null;
         const itemAddress = address?.trim() || null;
+        // No query = too vague to geocode (bare title, no region). Leave coords null rather
+        // than guessing: the list computes "near" from coordinates, so a wrong pin is worse
+        // than a missing one.
+        const geoQuery = buildGeoQuery({ address: itemAddress, title: itemTitle, region: itemRegion });
         const [imageUrl, geo] = await Promise.all([
             itemUrl ? fetchOgImage(itemUrl) : Promise.resolve(null),
-            geocode(buildGeoQuery({ address: itemAddress, title: itemTitle, region: itemRegion })),
+            geoQuery ? geocode(geoQuery) : Promise.resolve(null),
         ]);
 
         const item = await addItem(

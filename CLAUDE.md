@@ -19,6 +19,8 @@ npm run lint           # ESLint on src/ api/ vite.config.ts
 npm test               # vitest (streak + auth unit tests)
 npm run build          # Vite build → dist/
 node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent)
+node db/seed-japan.mjs <user>  # Seed the Japan list (verified set); refuses if it exists
+node db/audit-data.mjs         # Read-only data health check — counts, form, orphans, geo sanity
 ```
 
 **The floor:** typecheck + lint + test + build must be green before any commit. CI (`.github/workflows/ci.yml`) enforces the same four on push (main, v2) + PRs.
@@ -41,6 +43,10 @@ Endpoints: `auth-signup/login/me/logout` · `lists` (GET all w/ membership, POST
 
 ### Data (Postgres — Neon via Vercel Marketplace)
 Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list_members`, `items`, `reactions` (PK item+user+emoji), `comments`, `squats` (user+day). Generalized List primitive; squats table replaces the dead legacy KV store (suspended Upstash resource, disconnected 260804).
+
+**Item admission bar (owner rule 260804).** A list item must be a **specific place** — a named resort, a bathable onsen open to day visitors, a real restaurant — carrying a **live official url**, a **postal address**, and **base-area coordinates**. Categories, dish names, and "a town" do not qualify. The address is not decoration: `fillItemDialog` builds the Google Maps link from it and falls back to a fuzzy text search without it. **Food is human-entered by the crew** — don't bulk-seed it; the verified candidate pool lives in `_underScore/vault-Notes/Travel/Loc - Japan.md`.
+
+**Geocoding (`api/_lib/geo.ts`) — don't naively trust Nominatim.** It ranks areas highly and reports a way/relation's *centroid*, and it will happily match a railway station that shares a resort's name. Both happened; see `_underScore/work/explorations/260804-japan-list-credibility-audit.md`. `pickBestHit` therefore demotes false-friend classes, prefers points over area centroids, prefers smaller areas, and drops region-scale matches; `buildGeoQuery` returns `null` when input is too vague to pin. **A wrong coordinate is worse than a missing one** — `renderNearby` computes hub proximity from coordinates, so a bad pin corrupts every "near" relationship, not just its own. When adding place data by hand, take coordinates from named OSM lift terminals / facility nodes via Overpass, never from a Nominatim place lookup.
 
 ## Environment
 
