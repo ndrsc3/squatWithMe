@@ -1,4 +1,4 @@
-import { sql } from './db';
+import { sql } from './db.js';
 
 /** A user's squat days grouped by month: { 'YYYY-MM': [day, …] } — the grid's shape. */
 export interface SquatUser {

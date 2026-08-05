@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import { allowMethods } from './_lib/http';
-import { addMember, getListById } from './_lib/lists-repo';
+import { requireUser } from './_lib/auth.js';
+import { allowMethods } from './_lib/http.js';
+import { addMember, getListById } from './_lib/lists-repo.js';
 
 // Open join: the whole site is login-gated and shared friends-only by link,
 // so any signed-in user may join any list (v1 trust model).

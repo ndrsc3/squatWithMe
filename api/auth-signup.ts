@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { hashPassword, signToken } from './_lib/auth';
-import { allowMethods, setTokenCookie } from './_lib/http';
-import { createUser, findUserByUsername } from './_lib/users-repo';
+import { hashPassword, signToken } from './_lib/auth.js';
+import { allowMethods, setTokenCookie } from './_lib/http.js';
+import { createUser, findUserByUsername } from './_lib/users-repo.js';
 
 const USERNAME_RE = /^[a-zA-Z0-9_-]{3,32}$/;
 

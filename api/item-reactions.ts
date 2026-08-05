@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import { APPROVE_EMOJI } from './_lib/domain';
-import { allowMethods } from './_lib/http';
-import { isMemberOfItem, toggleApproval } from './_lib/lists-repo';
+import { requireUser } from './_lib/auth.js';
+import { APPROVE_EMOJI } from './_lib/domain.js';
+import { allowMethods } from './_lib/http.js';
+import { isMemberOfItem, toggleApproval } from './_lib/lists-repo.js';
 
 /** Toggle the caller's 🐙 approval on an item. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {

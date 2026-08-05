@@ -1,5 +1,5 @@
-import { sql } from './db';
-import type { Comment, Item, ItemWithMeta, List, ListWithMembership, MemberRole } from './domain';
+import { sql } from './db.js';
+import type { Comment, Item, ItemWithMeta, List, ListWithMembership, MemberRole } from './domain.js';
 
 // ── lists ──────────────────────────────────────────────────────────
 export async function createList(name: string, kind: string, ownerId: string): Promise<List> {

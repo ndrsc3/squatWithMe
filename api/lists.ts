@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import type { ListKind } from './_lib/domain';
-import { allowMethods } from './_lib/http';
-import { createList, getAllListsWithMembership } from './_lib/lists-repo';
+import { requireUser } from './_lib/auth.js';
+import type { ListKind } from './_lib/domain.js';
+import { allowMethods } from './_lib/http.js';
+import { createList, getAllListsWithMembership } from './_lib/lists-repo.js';
 
 const KINDS: ListKind[] = ['travel', 'squat', 'generic'];
 

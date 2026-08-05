@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import { allowMethods } from './_lib/http';
-import { addComment, isMemberOfItem } from './_lib/lists-repo';
+import { requireUser } from './_lib/auth.js';
+import { allowMethods } from './_lib/http.js';
+import { addComment, isMemberOfItem } from './_lib/lists-repo.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!allowMethods(req, res, 'POST')) return;

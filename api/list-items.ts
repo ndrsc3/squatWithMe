@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import type { ItemCategory } from './_lib/domain';
-import { allowMethods } from './_lib/http';
-import { buildGeoQuery, geocode } from './_lib/geo';
+import { requireUser } from './_lib/auth.js';
+import type { ItemCategory } from './_lib/domain.js';
+import { allowMethods } from './_lib/http.js';
+import { buildGeoQuery, geocode } from './_lib/geo.js';
 import {
     addItem,
     canManageItem,
@@ -11,8 +11,8 @@ import {
     isMember,
     isMemberOfItem,
     setItemNear,
-} from './_lib/lists-repo';
-import { fetchOgImage } from './_lib/og';
+} from './_lib/lists-repo.js';
+import { fetchOgImage } from './_lib/og.js';
 
 const CATEGORIES: ItemCategory[] = ['resort', 'onsen', 'food', 'other'];
 

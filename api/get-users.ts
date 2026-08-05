@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import { allowMethods } from './_lib/http';
-import { getUsersWithSquats } from './_lib/squats-repo';
+import { requireUser } from './_lib/auth.js';
+import { allowMethods } from './_lib/http.js';
+import { getUsersWithSquats } from './_lib/squats-repo.js';
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 

@@ -1,5 +1,5 @@
-import { sql } from './db';
-import type { User } from './domain';
+import { sql } from './db.js';
+import type { User } from './domain.js';
 
 /** User row including the password hash — for login verification only; never returned to clients. */
 export interface UserWithSecret extends User {

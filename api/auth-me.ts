@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { requireUser } from './_lib/auth';
-import { allowMethods } from './_lib/http';
-import { findUserById } from './_lib/users-repo';
+import { requireUser } from './_lib/auth.js';
+import { allowMethods } from './_lib/http.js';
+import { findUserById } from './_lib/users-repo.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!allowMethods(req, res, 'GET')) return;

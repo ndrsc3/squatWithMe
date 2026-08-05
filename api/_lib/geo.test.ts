@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bboxSpanKm, buildGeoQuery, pickBestHit, type NominatimHit } from './geo';
+import { bboxSpanKm, buildGeoQuery, pickBestHit, type NominatimHit } from './geo.js';
 
 /** Nominatim shape, trimmed to the fields pickBestHit reads. */
 function hit(partial: Partial<NominatimHit> & Pick<NominatimHit, 'lat' | 'lon'>): NominatimHit {

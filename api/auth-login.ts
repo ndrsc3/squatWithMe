@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { signToken, verifyPassword } from './_lib/auth';
-import { allowMethods, setTokenCookie } from './_lib/http';
-import { findUserByUsername } from './_lib/users-repo';
+import { signToken, verifyPassword } from './_lib/auth.js';
+import { allowMethods, setTokenCookie } from './_lib/http.js';
+import { findUserByUsername } from './_lib/users-repo.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!allowMethods(req, res, 'POST')) return;
