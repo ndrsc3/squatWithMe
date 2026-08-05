@@ -12,6 +12,7 @@
         "preview": "vite preview",
         "typecheck": "tsc --noEmit",
         "test": "vitest run",
+        "smoke": "node scripts/smoke-api.mjs",
         "lint": "eslint src/ api/ vite.config.ts",
         "format": "prettier --write src/ api/ vite.config.ts *.json"
     },

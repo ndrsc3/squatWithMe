@@ -35,3 +35,6 @@ Thumbs.db
 .env*.local
 .env*
 public/mockups/
+
+# runtime-load gate scratch (npm run smoke)
+.smoke/

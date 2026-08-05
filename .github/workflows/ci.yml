@@ -19,3 +19,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      # Runtime-load gate: actually import every api/* function under Node ESM.
+      # The four checks above stayed green while every route 500'd in production —
+      # none of them loads a function under the runtime that serves it.
+      - run: npm run smoke

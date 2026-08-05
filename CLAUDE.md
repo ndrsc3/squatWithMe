@@ -18,12 +18,15 @@ npm run typecheck      # tsc --noEmit
 npm run lint           # ESLint on src/ api/ vite.config.ts
 npm test               # vitest (streak + auth unit tests)
 npm run build          # Vite build → dist/
+npm run smoke          # Runtime-load gate — imports every api/* fn under Node ESM
 node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent)
 node db/seed-japan.mjs <user>  # Seed the Japan list (verified set); refuses if it exists
 node db/audit-data.mjs         # Read-only data health check — counts, form, orphans, geo sanity
 ```
 
-**The floor:** typecheck + lint + test + build must be green before any commit. CI (`.github/workflows/ci.yml`) enforces the same four on push (main, v2) + PRs.
+**The floor:** typecheck + lint + test + build + **smoke** must be green before any commit. CI (`.github/workflows/ci.yml`) enforces the same five on push (main, v2) + PRs.
+
+**`npm run smoke` exists because the other four cannot see a broken deployment.** On 260804 every `/api/*` route 500'd in production — twice — with the floor fully green, because no static check ever loads a function under the Node ESM runtime that serves it. The gate emits `api/` with tsc and actually `import()`s each entrypoint. Two real bugs it now blocks: `package.json` missing `"type": "module"` (emitted ESM parsed as CJS → `SyntaxError`), and extensionless relative imports (`moduleResolution: "bundler"` permits them, tsc rewrites nothing, Node's resolver → `ERR_MODULE_NOT_FOUND`). **Relative imports in `api/` must carry `.js`.** Note the `"type"` check is asserted explicitly rather than left to the import: Node 22+ auto-detects ESM syntax, so a modern local Node loads what Vercel's runtime rejects. Recipe + rationale: `_underScore/knowledge/vercel-api-runtime-gate.md`.
 
 ## Architecture
 
