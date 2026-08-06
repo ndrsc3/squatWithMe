@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-style="washi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Squat With Me</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
     <div id="app">
@@ -14,45 +17,44 @@
             </svg>
         </button>
 
-        <div id="user-setup" class="hidden">
-            <img src="/assets/images/squat.png" alt="Squat With Me" class="setup-image">
-            <h2>Welcome to Squat With Me!</h2>
-            <div id="user-setup-form">
+        <div id="auth-screen" class="hidden">
+            <h1 class="auth-title"><span class="hanko">大尻</span>Squat With Me</h1>
+            <img src="/assets/images/cat-butt.svg" alt="A cat mid-squat, knees out, seen from behind" class="setup-image" />
+            <h2 class="auth-headline">Let's get squattin'</h2>
+            <p class="auth-tagline">A community commitment to 100 squats / day</p>
+            <div id="login-form">
+                <input type="text" id="login-username" placeholder="Username" autocomplete="username">
+                <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+                <button id="login-submit" class="primary-button">Sign In</button>
+                <p id="login-error" class="error hidden"></p>
+                <div class="recovery-link">
+                    <p>New here?</p>
+                    <a href="#" id="show-signup">Create an account</a>
+                </div>
+            </div>
+
+            <div id="signup-form" class="hidden">
                 <p>I want a big butt and I want you to have one too.</p>
-                <p>I'm committing to 100 squats a day.</p> 
-                <p>Join the committment and offer a lil' support to your friends!</p>
-                <input type="text" id="username" placeholder="Choose your username">
-                <button id="save-username">Start Squatting</button>
-                <p id="username-error" class="error hidden"></p>
+                <p>I'm committing to 100 squats a day.</p>
+                <p>Join the commitment!</p>
+                <input type="text" id="signup-username" placeholder="Choose your username" autocomplete="username">
+                <input type="password" id="signup-password" placeholder="Password (8+ characters)" autocomplete="new-password">
+                <input type="text" id="signup-displayname" placeholder="Display name (optional)">
+                <button id="signup-submit" class="primary-button">Start Squatting</button>
+                <p id="signup-error" class="error hidden"></p>
                 <div class="recovery-link">
                     <p>Already have an account?</p>
-                    <a href="#" id="show-recovery">Recover it here</a>
+                    <a href="#" id="show-login">Sign in</a>
                 </div>
-            </div>
-
-            <div id="recovery-code-display" class="hidden">
-                <!-- Recovery code will be displayed here -->
-            </div>
-
-            <div id="account-recovery" class="hidden">
-                <h3>Recover Your Account</h3>
-                <p>Enter your username to recover your account.</p>
-                <input type="text" id="recovery-username" placeholder="Your username">
-                <div id="recovery-code-container" class="hidden">
-                    <p id="recovery-question" class="fun-question">If you could shoot a liquid out of your index finger, what would it be?</p>
-                    <input type="password" id="recovery-answer" class="recovery-input" placeholder="Your answer..." autocomplete="new-password">
-                </div>
-                <button id="recover-account">Recover Account</button>
-                <p id="recovery-error" class="error hidden"></p>
-                <p class="recovery-link"><a href="#" id="show-signup">Back to signup</a></p>
             </div>
         </div>
 
         <div id="main-app" class="hidden">
             <header>
                 <div class="header-content">
-                    <h1>Squat With Me</h1>
-                    <p id="subtitle">Cuz everything's better with friends...</p>
+                    <h1><span class="hanko">大尻</span>Squat With Me</h1>
+                    <p id="subtitle">Cuz everything's better with friends…</p>
+                    <p class="jp-subtitle">一緒にスクワット</p>
                 </div>
             </header>
 
@@ -63,29 +65,115 @@
             </div>
 
             <div id="user-input">
+                <img src="/assets/images/cat-butt.svg" alt="" class="mascot-small" />
                 <p class="user-input-text">Squat with <span id="active-users">0</span> others today!</p>
-                <button id="squat-button">I Squat Today! 🏋️‍♂️</button>
+                <button id="squat-button">I Squat Today!</button>
                 <div id="squat-status" class="hidden"></div>
             </div>
 
-            <div id="stats">
-                <div class="stats-list">
-                    <h2>Your Stats</h2>
-                    <p class="stats-item">User: <span id="current-username">-</span></p>
-                    <p class="stats-item">Streak: <span id="user-streak">0</span> days</p>
-                    <!-- <p class="stats-item">Longest Streak: <span id="longest-streak">0</span> days by <span id="streak-holder">-</span></p> -->
+            <div class="stats-panel" id="stats-you">
+                <div class="panel-heading"><h2>You</h2><span class="jp-label">あなた</span></div>
+                <div class="you-hero">
+                    <div class="hero-big"><span id="user-streak">0</span><small>day streak</small></div>
+                    <div class="hero-side">
+                        <p class="you-status" id="you-status"></p>
+                        <div class="day-strip" id="you-strip"></div>
+                        <p class="hero-sub" id="you-month"></p>
+                    </div>
+                </div>
+                <div class="meter-wrap">
+                    <div class="meter-lbl"><b>Road to winter</b><span class="jp-label">冬まで</span></div>
+                    <div class="meter"><div class="meter-fill" id="winter-fill"></div></div>
+                    <p class="meter-sub" id="winter-sub"></p>
                 </div>
             </div>
 
-            <div id="grid-container">
-                <h2>Everyone's Stats</h2>
-                <div id="squat-grid"></div>
+            <div class="stats-panel" id="stats-today">
+                <div class="panel-heading"><h2>Today</h2><span class="jp-label">今日のみんな</span></div>
+                <div class="chips" id="today-chips"></div>
+                <p class="rollcall-sub" id="today-count"></p>
+            </div>
+
+            <div class="stats-panel" id="stats-crew">
+                <div class="panel-heading"><h2>The Crew</h2><span class="jp-label">みんなの記録</span></div>
+                <div id="crew-rows"></div>
+            </div>
+
+            <div id="lists-section">
+                <h2>The Lists</h2>
+                <div id="lists-container"></div>
+                <div class="new-list-form">
+                    <input type="text" id="new-list-name" placeholder="New list name…" maxlength="120">
+                    <button id="new-list-create">Create</button>
+                </div>
+            </div>
+
+            <div class="user-bar">
+                <p class="stats-item">Signed in as <span id="current-username">-</span></p>
+                <button id="logout-button" class="link-button">Sign out</button>
             </div>
         </div>
-    </div>
-    <footer class="app-footer">
-        <div class="footer-content">
-            <div class="footer-links" >
+
+        <div id="list-detail" class="hidden">
+            <a href="#" class="back-link">← Back to home</a>
+            <div class="list-head">
+                <h2 id="list-title"></h2>
+                <button id="add-item-open" class="primary-button hidden">+ Add to the list</button>
+            </div>
+            <div id="list-filters"></div>
+            <div id="items-container"></div>
+        </div>
+
+        <dialog id="add-dialog">
+            <div class="dialog-inner">
+                <h2>Add to the list</h2>
+                <input type="text" id="add-item-title" placeholder="Name" maxlength="200">
+                <select id="add-item-category">
+                    <option value="resort" selected>🏔️ Resort</option>
+                    <option value="onsen">♨️ Onsen</option>
+                    <option value="food">🍜 Food</option>
+                    <option value="other">📍 Other</option>
+                </select>
+                <input type="text" id="add-item-region" placeholder="Region (e.g. Hokkaido, Nagano)">
+                <input type="url" id="add-item-url" placeholder="Website (optional — we'll grab its image)">
+                <input type="url" id="add-item-address" placeholder="Google Maps link (optional)">
+                <textarea id="add-item-note" placeholder="Description (optional)" rows="3" maxlength="2000"></textarea>
+                <p id="add-item-error" class="error hidden"></p>
+                <div class="dialog-actions">
+                    <button id="add-item-cancel" class="ghost-button">Cancel</button>
+                    <button id="add-item-submit" class="primary-button">Add it</button>
+                </div>
+            </div>
+        </dialog>
+
+        <dialog id="item-dialog">
+            <button class="dialog-close" id="item-dialog-close">✕</button>
+            <div class="detail-imgbox" id="detail-imgbox"><span></span></div>
+            <div class="dialog-inner">
+                <h2 id="detail-title"></h2>
+                <p class="detail-region" id="detail-region"></p>
+                <p class="detail-note" id="detail-note"></p>
+                <div class="detail-links">
+                    <a class="detail-url" id="detail-url" target="_blank" rel="noopener noreferrer"></a>
+                    <a class="detail-map" id="detail-map" target="_blank" rel="noopener noreferrer"></a>
+                </div>
+                <div id="detail-nearby"></div>
+                <div class="approve-row">
+                    <button class="approve-button" id="detail-approve">🐙 <span id="detail-approve-count"></span></button>
+                    <span class="approve-who" id="detail-who"></span>
+                </div>
+                <div class="detail-comments" id="detail-comments"></div>
+                <button class="ghost-button" id="detail-comment-btn">💬 Add a comment</button>
+                <div class="comment-composer hidden" id="detail-composer">
+                    <input type="text" id="detail-comment-input" placeholder="Say something…" maxlength="2000">
+                    <button id="detail-comment-post">Post</button>
+                </div>
+                <button class="ghost-button danger hidden" id="detail-remove">Remove from list</button>
+            </div>
+        </dialog>
+
+        <footer class="app-footer">
+            <div class="footer-links">
                 <a href="https://x.com/_Uniquo_" target="_blank" rel="noopener noreferrer">
                     <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -105,12 +193,9 @@
                     <span>Buy me a coffee</span>
                 </a>
             </div>
-            <div class="footer-text">
-                <p>An App by _Uniquo</p>
-                <p>Made with ❤️ for my squat community</p>
-            </div>
-        </div>
-    </footer>
-    <script type="module" src="app.js"></script>
+            <p class="footer-text">An App by _Uniquo · Made with ❤️ for my squat community</p>
+        </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html> 

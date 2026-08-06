@@ -1,0 +1,46 @@
+/* Compact colophon — reads as the last line of the page, not a separate section. */
+.app-footer {
+    margin-top: 32px;
+    padding: 14px 0 4px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+}
+
+.footer-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-color);
+    opacity: 0.6;
+    text-decoration: none;
+    font-size: 0.78em;
+    transition:
+        opacity 0.2s ease,
+        color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+    opacity: 1;
+}
+
+.footer-links .icon {
+    width: 14px;
+    height: 14px;
+}
+
+.footer-text {
+    margin: 0;
+    color: var(--text-color);
+    opacity: 0.5;
+    font-size: 0.75em;
+}

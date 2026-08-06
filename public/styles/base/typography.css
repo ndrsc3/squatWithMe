@@ -1,0 +1,77 @@
+h1,
+h2,
+h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+}
+
+h1 {
+    margin: 0;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Vermillion hanko stamp beside the title (大尻 = big butt), vertical like a real seal */
+.hanko {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    writing-mode: vertical-rl;
+    padding: 0.3em 0.22em;
+    line-height: 1;
+    background: var(--primary-color);
+    color: var(--surface-color);
+    border-radius: 6px;
+    font-size: 0.5em;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    transform: rotate(-6deg);
+    flex: none;
+}
+
+.jp-subtitle {
+    margin: 2px 0 0;
+    color: var(--primary-color);
+    letter-spacing: 0.35em;
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+#subtitle {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.65;
+    font-style: normal;
+}
+
+#current-username {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#user-streak,
+#longest-streak,
+#streak-holder {
+    font-weight: 600;
+}
+
+.error {
+    color: var(--error-color);
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8em;
+    }
+
+    h2 {
+        font-size: 1.4em;
+    }
+}

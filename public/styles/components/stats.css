@@ -1,0 +1,237 @@
+/* Stats panels (You / Today / The Crew) — 260804 redesign, mockup direction H. */
+
+.stats-panel {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--sg-radius);
+    padding: 16px;
+    margin: 0 0 16px;
+    text-align: left;
+}
+
+.panel-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.panel-heading h2 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.05em;
+    margin: 0;
+}
+
+.jp-label {
+    font-size: 0.72em;
+    color: var(--sg-muted);
+}
+
+/* ── You panel ─────────────────────────────────── */
+.you-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.hero-big {
+    font-size: 3.2em;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.hero-big small {
+    display: block;
+    font-size: 0.32em;
+    font-weight: 400;
+    color: var(--sg-muted);
+    margin-top: 4px;
+}
+
+.hero-side {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.you-status {
+    margin: 0;
+}
+
+.you-status.done {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.hero-sub {
+    font-size: 0.8em;
+    color: var(--sg-muted);
+    margin: 0;
+}
+
+.meter-wrap {
+    margin-top: 14px;
+}
+
+.meter-lbl {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 0.8em;
+    margin-bottom: 6px;
+}
+
+.meter {
+    height: 10px;
+    border-radius: 5px;
+    background: light-dark(#f0ddd0, #3a2a24); /* lighter step of the accent ramp */
+    overflow: hidden;
+}
+
+.meter-fill {
+    height: 100%;
+    border-radius: 5px 4px 4px 5px;
+    background: var(--primary-color);
+    min-width: 2px;
+}
+
+.meter-sub {
+    font-size: 0.78em;
+    color: var(--sg-muted);
+    margin: 6px 0 0;
+}
+
+/* ── day cells (You strip + Crew strips) ───────── */
+.day-strip {
+    display: flex;
+    gap: 3px;
+}
+
+.day-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 5px;
+    background: light-dark(#ece2cd, #322c24);
+}
+
+.day-cell.on {
+    background: var(--primary-color);
+}
+
+.day-cell.is-today {
+    outline: 2px solid light-dark(#3a2f2866, #eee4d266);
+    outline-offset: 1px;
+}
+
+/* ── Today panel ───────────────────────────────── */
+.chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.chip {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9em;
+    background: var(--primary-color);
+    color: var(--surface-color);
+}
+
+.chip.wait {
+    background: transparent;
+    color: var(--sg-muted);
+    font-weight: 400;
+    border: 1.5px dashed var(--border-color);
+}
+
+.rollcall-sub {
+    font-size: 0.8em;
+    color: var(--sg-muted);
+    margin: 0;
+}
+
+/* ── Crew panel ────────────────────────────────── */
+.crew-row {
+    display: grid;
+    grid-template-columns: 84px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 9px;
+}
+
+.crew-row:last-child {
+    margin-bottom: 0;
+}
+
+.crew-row.marks-row {
+    margin-bottom: 6px;
+}
+
+.crew-row.dormant {
+    opacity: 0.42;
+}
+
+.crew-name {
+    font-weight: 700;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crew-name.me::after {
+    content: '·';
+    color: var(--primary-color);
+    margin-left: 4px;
+}
+
+.crew-streak {
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.crew-streak.zero {
+    color: var(--sg-muted);
+}
+
+.strip-marks {
+    display: flex;
+    gap: 3px;
+    font-size: 0.6em;
+    color: var(--sg-muted);
+}
+
+.strip-marks span {
+    width: 14px;
+    display: flex;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .crew-row {
+        grid-template-columns: 64px 1fr auto;
+        gap: 8px;
+    }
+
+    .day-cell,
+    .strip-marks span {
+        width: 12px;
+    }
+
+    .day-cell {
+        height: 12px;
+    }
+
+    .day-strip,
+    .strip-marks {
+        gap: 2px;
+    }
+}

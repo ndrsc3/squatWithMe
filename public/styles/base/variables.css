@@ -1,0 +1,28 @@
+/* Bridge: legacy app variable names → the vendored washi style guide (--sg-* roles,
+   see base/washi.css). App-specific extras (border/grid/peach/error) live here.
+   Theming: guide tokens are light-dark() pairs; the theme toggle flips color-scheme
+   (dark default — ink night; .light-theme → washi day). */
+:root[data-style='washi'] {
+    color-scheme: dark;
+}
+
+:root[data-style='washi'].light-theme {
+    color-scheme: light;
+}
+
+:root {
+    --primary-color: var(--sg-accent);
+    --secondary-color: light-dark(#a83a24, #c8452c);
+    --background-color: var(--sg-bg);
+    --surface-color: var(--sg-surface);
+    --text-color: var(--sg-ink);
+    --border-color: light-dark(#e3d8c2, #3b342b);
+    --grid-bg-color: light-dark(#ede4d0, #2b2620);
+    --header-bg-color: light-dark(#e8ddc6, #322c24);
+    --error-color: light-dark(#b3402e, #e57357);
+    --peach-color: light-dark(#f6b78f, #d99771);
+    --indigo-color: var(--sg-accent-2);
+
+    --font-display: var(--sg-font-display);
+    --font-body: var(--sg-font-body);
+}

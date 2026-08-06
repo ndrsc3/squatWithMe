@@ -1,60 +1,13 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "*.html", "use": "@vercel/static" },
-    { "src": "*.css", "use": "@vercel/static" },
-    { "src": "*.js", "use": "@vercel/static" },
-    { "src": "public/**/*", "use": "@vercel/static" },
-    { "src": "api/**/*.js", "use": "@vercel/node" }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/ws",
-      "destination": "/api/ws.js"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1.js"
-    },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/public/assets/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
+    "outputDirectory": "dist",
+    "installCommand": "npm install",
+    "devCommand": "vite --port $PORT",
+    "buildCommand": "npm run build",
+    "routes": [
+        { "src": "/api/(.*)", "dest": "/api/$1" },
+        { "handle": "filesystem" }
+    ],
+    "functions": {
+        "api/*.ts": { "runtime": "@vercel/node@5.6.16" }
     }
-  ],
-  "headers": [
-    {
-      "source": "/api/ws",
-      "headers": [
-        {
-          "key": "Upgrade",
-          "value": "websocket"
-        },
-        {
-          "key": "Connection",
-          "value": "Upgrade"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Connection, Upgrade"
-        }
-      ]
-    }
-  ]
-} 
+}

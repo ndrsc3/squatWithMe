@@ -1,0 +1,26 @@
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    margin: 0;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+}

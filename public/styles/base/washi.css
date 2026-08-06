@@ -1,0 +1,25 @@
+/* =============================================================
+   Style guide: washi — paper & sumi ink, vermillion accent
+   VENDORED COPY of _underScore/knowledge/brand/guides/washi.css
+   (canonical lives there — edit there first, mirror here).
+   Semantic token contract v1 — consumers style against --sg-*
+   roles, never raw colors.
+   ============================================================= */
+
+:root[data-style="washi"] {
+    color-scheme: light dark;
+
+    --sg-bg: light-dark(#f4eddd, #191614);
+    --sg-surface: light-dark(#fbf7ec, #242019);
+    --sg-ink: light-dark(#3a2f28, #eee4d2);
+    --sg-muted: light-dark(#8a7d6d, #a39682);
+
+    --sg-accent: light-dark(#c8452c, #e0704f); /* torii vermillion */
+    --sg-accent-2: light-dark(#52688f, #8fa3c8); /* indigo */
+
+    --sg-font-display: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', ui-rounded, sans-serif;
+    --sg-font-body: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', ui-rounded, sans-serif;
+    --sg-font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+    --sg-radius: 12px;
+}
