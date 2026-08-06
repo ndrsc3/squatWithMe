@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireUser } from './_lib/auth.js';
 import type { ItemCategory } from './_lib/domain.js';
 import { allowMethods } from './_lib/http.js';
-import { buildGeoQuery, geocode } from './_lib/geo.js';
+import { buildGeoQuery, coordsFromMapsUrl, geocode } from './_lib/geo.js';
 import {
     addItem,
     canManageItem,
@@ -81,10 +81,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const itemUrl = url?.trim() || null;
         const itemRegion = region?.trim() || null;
         const itemAddress = address?.trim() || null;
-        // No query = too vague to geocode (bare title, no region). Leave coords null rather
-        // than guessing: the list computes "near" from coordinates, so a wrong pin is worse
-        // than a missing one.
-        const geoQuery = buildGeoQuery({ address: itemAddress, title: itemTitle, region: itemRegion });
+        // A pasted Google Maps link may carry the pin's exact coordinates — trust those
+        // over any geocode. Otherwise: no query = too vague to geocode (bare title, no
+        // region). Leave coords null rather than guessing: the list computes "near" from
+        // coordinates, so a wrong pin is worse than a missing one.
+        const mapsCoords = itemAddress ? coordsFromMapsUrl(itemAddress) : null;
+        const geoQuery = mapsCoords
+            ? null
+            : buildGeoQuery({ address: itemAddress, title: itemTitle, region: itemRegion });
         const [imageUrl, geo] = await Promise.all([
             itemUrl ? fetchOgImage(itemUrl) : Promise.resolve(null),
             geoQuery ? geocode(geoQuery) : Promise.resolve(null),
@@ -100,8 +104,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 address: itemAddress,
                 imageUrl,
                 note: note?.trim() || null,
-                lat: geo?.lat ?? null,
-                lng: geo?.lng ?? null,
+                lat: mapsCoords?.lat ?? geo?.lat ?? null,
+                lng: mapsCoords?.lng ?? geo?.lng ?? null,
             },
             session.userId,
         );

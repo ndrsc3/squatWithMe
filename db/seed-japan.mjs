@@ -23,7 +23,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const LIST_NAME = 'Japan — Feb 2027 🏔️♨️';
+const LIST_NAME = 'Japan - Winter 2027';
 
 const ITEMS = [
     {"title":"Akakura Onsen (Myoko Kogen)","category":"resort","region":"Niigata","url":"https://akakura-ski.com/english/","address":"Akakura Onsen, Myoko City, Niigata 949-2111, Japan","imageUrl":"https://myokotourism.jp/wp-content/uploads/2021/11/いもり池-2.jpg","note":"Niigata — huge snowfall (13–14 m/yr), under-the-radar. Largest of Myoko Kogen's five separate ski areas (14 lifts), the lodging hub, lift-linked to Akakura Kanko on a joint pass, and the only one with night skiing. 100% natural snow, no snowmaking. Note Suginohara is the Ikon one, not this.","lat":36.896459,"lng":138.175545},

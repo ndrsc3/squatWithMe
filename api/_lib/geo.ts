@@ -108,15 +108,36 @@ export async function geocode(query: string): Promise<GeoResult | null> {
 /**
  * Address wins; else title + region. Returns null when the input is too vague to geocode
  * safely — a bare title ("Bang Bang") matches something on nearly every continent, and a
- * confident wrong pin is worse than an honest missing one.
+ * confident wrong pin is worse than an honest missing one. A URL in the address slot
+ * (the field now takes a pasted Google Maps link) is never a Nominatim query.
  */
 export function buildGeoQuery(input: {
     address?: string | null;
     title: string;
     region?: string | null;
 }): string | null {
-    if (input.address) return input.address;
+    if (input.address && !/^https?:\/\//i.test(input.address)) return input.address;
     const region = input.region?.trim();
     if (!region || region.toLowerCase() === 'anywhere') return null;
     return `${input.title}, ${region}`;
+}
+
+/**
+ * Coordinates embedded in a pasted Google Maps URL. `!3d…!4d…` is the selected place's
+ * pin — exact, prefer it; `@lat,lng` is only the viewport center. Short share links
+ * (maps.app.goo.gl) embed neither and return null — callers fall back to geocoding.
+ */
+export function coordsFromMapsUrl(url: string): { lat: number; lng: number } | null {
+    const pick = (m: RegExpExecArray | null) => {
+        if (!m) return null;
+        const lat = Number(m[1]);
+        const lng = Number(m[2]);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+        return { lat, lng };
+    };
+    return (
+        pick(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/.exec(url)) ??
+        pick(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/.exec(url))
+    );
 }

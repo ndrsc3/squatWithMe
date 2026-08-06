@@ -7,6 +7,21 @@
     padding: 2rem 1rem;
 }
 
+.auth-title {
+    margin-bottom: 1.5rem;
+}
+
+.auth-headline {
+    margin: 0 0 0.35rem;
+}
+
+.auth-tagline {
+    margin: 0 0 1.5rem;
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.65;
+}
+
 #login-form,
 #signup-form {
     display: flex;

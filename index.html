@@ -18,10 +18,11 @@
         </button>
 
         <div id="auth-screen" class="hidden">
-            <img src="/assets/images/cat-butt.svg" alt="A very round cat, seen from behind" class="setup-image" />
-            <h2>Welcome to Squat With Me!</h2>
+            <h1 class="auth-title"><span class="hanko">大尻</span>Squat With Me</h1>
+            <img src="/assets/images/cat-butt.svg" alt="A cat mid-squat, knees out, seen from behind" class="setup-image" />
+            <h2 class="auth-headline">Let's get squattin'</h2>
+            <p class="auth-tagline">A community commitment to 100 squats / day</p>
             <div id="login-form">
-                <p>Friends-only — sign in to get squatting.</p>
                 <input type="text" id="login-username" placeholder="Username" autocomplete="username">
                 <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
                 <button id="login-submit" class="primary-button">Sign In</button>
@@ -35,7 +36,7 @@
             <div id="signup-form" class="hidden">
                 <p>I want a big butt and I want you to have one too.</p>
                 <p>I'm committing to 100 squats a day.</p>
-                <p>Join the commitment and offer a lil' support to your friends!</p>
+                <p>Join the commitment!</p>
                 <input type="text" id="signup-username" placeholder="Choose your username" autocomplete="username">
                 <input type="password" id="signup-password" placeholder="Password (8+ characters)" autocomplete="new-password">
                 <input type="text" id="signup-displayname" placeholder="Display name (optional)">
@@ -66,7 +67,7 @@
             <div id="user-input">
                 <img src="/assets/images/cat-butt.svg" alt="" class="mascot-small" />
                 <p class="user-input-text">Squat with <span id="active-users">0</span> others today!</p>
-                <button id="squat-button">I Squat Today! 🏋️‍♂️</button>
+                <button id="squat-button">I Squat Today!</button>
                 <div id="squat-status" class="hidden"></div>
             </div>
 
@@ -126,16 +127,16 @@
         <dialog id="add-dialog">
             <div class="dialog-inner">
                 <h2>Add to the list</h2>
-                <input type="text" id="add-item-title" placeholder="Title" maxlength="200">
+                <input type="text" id="add-item-title" placeholder="Name" maxlength="200">
                 <select id="add-item-category">
-                    <option value="resort">🏔️ Resort</option>
+                    <option value="resort" selected>🏔️ Resort</option>
                     <option value="onsen">♨️ Onsen</option>
                     <option value="food">🍜 Food</option>
-                    <option value="other" selected>📍 Other</option>
+                    <option value="other">📍 Other</option>
                 </select>
                 <input type="text" id="add-item-region" placeholder="Region (e.g. Hokkaido, Nagano)">
                 <input type="url" id="add-item-url" placeholder="Website (optional — we'll grab its image)">
-                <input type="text" id="add-item-address" placeholder="Address (optional — links to Google Maps)">
+                <input type="url" id="add-item-address" placeholder="Google Maps link (optional)">
                 <textarea id="add-item-note" placeholder="Description (optional)" rows="3" maxlength="2000"></textarea>
                 <p id="add-item-error" class="error hidden"></p>
                 <div class="dialog-actions">
@@ -172,8 +173,7 @@
         </dialog>
 
         <footer class="app-footer">
-        <div class="footer-content">
-            <div class="footer-links" >
+            <div class="footer-links">
                 <a href="https://x.com/_Uniquo_" target="_blank" rel="noopener noreferrer">
                     <svg class="icon" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -193,11 +193,7 @@
                     <span>Buy me a coffee</span>
                 </a>
             </div>
-            <div class="footer-text">
-                <p>An App by _Uniquo</p>
-                <p>Made with ❤️ for my squat community</p>
-            </div>
-        </div>
+            <p class="footer-text">An App by _Uniquo · Made with ❤️ for my squat community</p>
         </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>

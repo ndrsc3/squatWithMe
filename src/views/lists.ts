@@ -123,7 +123,7 @@ export async function renderListDetail(listId: string, myUserId: string): Promis
         container.textContent = '';
         return;
     }
-    title.textContent = list.name;
+    title.textContent = `${KIND_BADGE[list.kind] ?? '📋'} ${list.name}`;
     currentListRole = list.role;
 
     if (!list.isMember) {
@@ -251,11 +251,17 @@ function fillItemDialog(item: ApiItem, context: DetailContext): void {
         url.classList.add('hidden');
     }
 
-    // Maps link: precise address when present, else best-effort title + region search.
+    // Maps link: a pasted Google Maps URL links directly; a legacy postal address (or
+    // nothing) falls back to a Maps search on address / title + region.
     const map = document.getElementById('detail-map') as HTMLAnchorElement;
-    const mapQuery = item.address ?? [item.title, item.region].filter(Boolean).join(' ');
-    map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
-    map.textContent = item.address ? `📍 ${item.address}` : '📍 Map';
+    if (item.address && /^https?:\/\//i.test(item.address)) {
+        map.href = item.address;
+        map.textContent = '📍 Map';
+    } else {
+        const mapQuery = item.address ?? [item.title, item.region].filter(Boolean).join(' ');
+        map.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
+        map.textContent = item.address ? `📍 ${item.address}` : '📍 Map';
+    }
 
     const remove = document.getElementById('detail-remove')!;
     const canRemove = currentListRole === 'owner' || item.createdBy === context.myUserId;
@@ -412,7 +418,7 @@ export function initListDetailUI(getContext: () => DetailContext | null): void {
 
         const title = titleInput.value.trim();
         if (!title) {
-            errorEl.textContent = 'A title is required';
+            errorEl.textContent = 'A name is required';
             errorEl.classList.remove('hidden');
             return;
         }
@@ -431,7 +437,7 @@ export function initListDetailUI(getContext: () => DetailContext | null): void {
             })
             .then(() => {
                 titleInput.value = regionInput.value = urlInput.value = addressInput.value = noteInput.value = '';
-                categorySelect.value = 'other';
+                categorySelect.value = 'resort';
                 addDialog.close();
                 refresh();
             })

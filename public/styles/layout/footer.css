@@ -1,63 +1,46 @@
+/* Compact colophon — reads as the last line of the page, not a separate section. */
 .app-footer {
-    margin-top: 40px;
-    padding-top: 20px;
+    margin-top: 32px;
+    padding: 14px 0 4px;
     border-top: 1px solid var(--border-color);
-}
-
-.footer-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 8px;
 }
 
 .footer-links {
     display: flex;
-    gap: 20px;
+    justify-content: center;
+    gap: 18px;
 }
 
 .footer-links a {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     color: var(--text-color);
+    opacity: 0.6;
     text-decoration: none;
-    font-size: 0.9em;
-    transition: color 0.2s ease;
+    font-size: 0.78em;
+    transition:
+        opacity 0.2s ease,
+        color 0.2s ease;
 }
 
 .footer-links a:hover {
     color: var(--primary-color);
+    opacity: 1;
 }
 
 .footer-links .icon {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
 }
 
 .footer-text {
+    margin: 0;
     color: var(--text-color);
-    font-size: 0.9em;
-    text-align: center;
-}
-
-@media (max-width: 768px) {
-    .footer-links {
-        flex-direction: row;
-        justify-content: center;
-        gap: 30px;
-    }
-
-    .footer-links a span {
-        display: none;
-    }
-
-    .footer-links .icon {
-        width: 24px;
-        height: 24px;
-    }
-
-    .footer-links a {
-        padding: 8px;
-    }
+    opacity: 0.5;
+    font-size: 0.75em;
 }
