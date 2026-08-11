@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **squatWithMe V2** — a friends-only accountability app: commit to 100 squats/day on a shared leaderboard, and plan the group trip on collaborative Lists (add items, approve, comment). First list: the Feb 2027 Japan snowboard trip. Vanilla TypeScript + Vite SPA, Vercel serverless API, Neon Postgres. Whole site is login-gated (JWT).
 
-Active branch: `v2` (main still serves the legacy V1 app until promotion).
-Plan of record: `_underScore/work/plans/active/260803-squat-with-me-v2.md`.
+**V2 is production.** Merged to `main` 260806 (PR #1); the legacy V1 app is gone. Work on branches off `main`.
+**Tracking lives here** — `docs/TASKS.md` is the only board. The V2 build plan is closed and kept as history at `_underScore/work/plans/implemented/260803-squat-with-me-v2.md` (phases, locked decisions, branch-reconciliation reasoning); underScore carries no open rows for this project.
 
 ## Commands
 
@@ -66,4 +66,4 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 
 ## Git Workflow
 
-Work on `v2`. Push → CI + Vercel preview (deployment-protected). Do not merge to `main` (= production deploy) without owner go-ahead. No auto-commit — floor green + owner approval per commit.
+`main` is production. Work on a feature branch off `main`; push → CI + Vercel preview (deployment-protected). Do not merge to `main` (= production deploy) without owner go-ahead. No auto-commit — floor green + owner approval per commit.
