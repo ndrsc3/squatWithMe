@@ -1,6 +1,6 @@
 # Task Board
 
-_Last touched: 261020 · **This board is the only tracker.** V2 shipped to production 260806 and tracking moved here — underScore holds no rows for this project. Its plan is closed at `_underScore/work/plans/implemented/260803-squat-with-me-v2.md` (historical record: phases, locked decisions, branch-reconciliation reasoning). Design brief: `_underScore/work/explorations/260804-squat-with-me-uiux-redesign.md` (closed)._
+_Last touched: 261022 · **This board is the only tracker.** V2 shipped to production 260806 and tracking moved here — underScore holds no rows for this project. Its plan is closed at `_underScore/work/plans/implemented/260803-squat-with-me-v2.md` (historical record: phases, locked decisions, branch-reconciliation reasoning). Design brief: `docs/design/260804-uiux-redesign.md` (closed)._
 
 ## P1 — Blockers
 
