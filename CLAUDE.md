@@ -61,7 +61,7 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 
 - Style guide: **washi** (`public/styles/base/washi.css` — VENDORED copy; canonical = `_underScore/knowledge/brand/guides/washi.css`, edit there first, mirror here). Components consume `--sg-*` roles through the bridge in `public/styles/base/variables.css` — never raw colors.
 - Theme: `light-dark()` tokens flipped via `color-scheme`; toggle sets `.light-theme` on `<html>`.
-- Design/styling work starts from `_underScore/knowledge/brand/` + `knowledge/web-stack.md` (§ Style guides, radar loop for new libs — vendor, don't hand-roll).
+- Design/styling work starts from this app's own direction in `docs/design/` (brief, decisions, the 260804 UI/UX exploration), using `_underScore/knowledge/uiux-sketch-rounds.md` as the method and `_underScore/knowledge/web-stack.md` for tooling (§ Style guides, radar loop for new libs — vendor, don't hand-roll). The washi guide above is this app's chosen guide.
 - **Visual review** uses `_underScore/knowledge/web-visual-verification.md` (headless Brave recipe; note the `--virtual-time-budget` and mobile-width quirks documented there). Keeper shots → `_underScore/_artifacts/ui-smoke/squatwithme/`.
 
 ## Git Workflow

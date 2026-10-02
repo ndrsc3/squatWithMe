@@ -1,9 +1,9 @@
 # Task Board
 
-_Last touched: 260804 · Plan of record: `_underScore/work/plans/active/260803-squat-with-me-v2.md`_
+_Last touched: 260804 · Plan of record: `_underScore/work/plans/implemented/260803-squat-with-me-v2.md`_
 
 Code-adjacent tasks only — phases, decisions, and design briefs live in the plan of record
-and `_underScore/work/explorations/260804-squat-with-me-uiux-redesign.md`.
+and `docs/design/260804-uiux-redesign.md`.
 
 ## P1 — Blockers
 
