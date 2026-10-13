@@ -15,6 +15,7 @@ _None_
 
 ## P3 — Backlog
 
+- [ ] [DX] Migrate toolchain to the 261012 house stack on next touch — ESLint 9 (EOL) → oxlint type-aware, TS 7 strict baseline, pnpm, `pnpm check` gate. Steps: Web Kit v2.0 `VERSIONS.md` § Migrating a v1.0 project
 - [ ] [FEATURE] Offline squat sync (record while offline, sync on reconnect)
 - [ ] [FEATURE] Toast notification system for feedback
 - [ ] [FEATURE] Map wave — Leaflet render of geocoded items (geo layer shipped 260804; map is rendering-only)
