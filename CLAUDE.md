@@ -20,6 +20,7 @@ npm run lint           # ESLint on src/ api/ vite.config.ts
 npm test               # vitest (streak + auth unit tests)
 npm run build          # Vite build → dist/
 npm run smoke          # Runtime-load gate — imports every api/* fn under Node ESM
+npm run e2e            # Playwright, real logged-in UI on the dev DB (starts dev:full if :3000 is free); shots → e2e/.results/shots/
 node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent; refuses production outside a production build)
 node db/seed-japan.mjs <user>  # Seed the Japan list (verified set); refuses if it exists
 node db/audit-data.mjs         # Read-only data health check — counts, form, orphans, geo sanity
