@@ -75,4 +75,4 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 
 ## Git Workflow
 
-`main` is production. Work on a feature branch off `main`; push → CI + Vercel preview (deployment-protected). Do not merge to `main` (= production deploy) without owner go-ahead. No auto-commit — floor green + owner approval per commit.
+`main` is production. Every change: feature branch off `main` → commits (the pre-commit hook runs `npm run check`) → for UI changes, `npm run e2e` and read its screenshots → PR → CI + Vercel preview (deployment-protected; its build applies `schema.sql` to `dev`) → **owner approves the PR in chat** → merge → verify production (site 200, `/api/auth-me` 401, build log shows `statements applied (VERCEL_ENV=production)`). Never merge or push to `main` without that approval.
