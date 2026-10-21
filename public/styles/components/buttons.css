@@ -140,3 +140,68 @@
     animation: butt-wiggle 0.45s ease-in-out infinite;
     background-color: var(--secondary-color);
 }
+
+/* Rep counter — a personal tally for the day, kept in this browser only. */
+.rep-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.rep-counter-label {
+    margin: 0;
+    font-size: 0.9em;
+    font-style: italic;
+    color: var(--sg-muted);
+}
+
+.rep-counter-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rep-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    background: none;
+    color: var(--primary-color);
+    font-size: 1.4em;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.rep-btn:hover {
+    background: var(--primary-color);
+    color: var(--surface-color);
+}
+
+.rep-btn:active {
+    transform: scale(0.94);
+}
+
+#rep-count {
+    width: 4.5ch;
+    padding: 6px 4px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--sg-radius);
+    background: var(--surface-color);
+    color: var(--text-color);
+    font-family: var(--font-display);
+    font-size: 1.8em;
+    font-weight: 900;
+    text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+#rep-count::-webkit-outer-spin-button,
+#rep-count::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

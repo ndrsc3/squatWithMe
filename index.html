@@ -69,6 +69,14 @@
                 <p class="user-input-text">Squat with <span id="active-users">0</span> others today!</p>
                 <button id="squat-button">I Squat Today!</button>
                 <div id="squat-status" class="hidden"></div>
+                <div class="rep-counter">
+                    <p class="rep-counter-label">For those who lack discipline...</p>
+                    <div class="rep-counter-controls">
+                        <button type="button" class="rep-btn" id="rep-minus" aria-label="One less squat">−</button>
+                        <input type="number" id="rep-count" inputmode="numeric" min="0" max="10000" step="1" value="0" aria-label="Squats so far today" />
+                        <button type="button" class="rep-btn" id="rep-plus" aria-label="One more squat">+</button>
+                    </div>
+                </div>
             </div>
 
             <div class="stats-panel" id="stats-you">

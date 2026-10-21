@@ -94,6 +94,13 @@ export const getSquatUsers = (since: string) =>
 export const recordSquat = (date: string) =>
     api<{ success: boolean }>('record-squat', 'POST', { date });
 
+/** My live rep count for the given client-local day (0 once the day has rolled over). */
+export const getReps = (day: string) => api<{ count: number }>(`squat-reps?day=${encodeURIComponent(day)}`);
+
+/** Save my rep count; the server records the day once it reaches 100. */
+export const saveReps = (day: string, count: number) =>
+    api<{ count: number; recorded: boolean }>('squat-reps', 'POST', { day, count });
+
 // ── lists ──────────────────────────────────────────────────────────
 export const getLists = () => api<{ lists: ApiList[] }>('lists');
 

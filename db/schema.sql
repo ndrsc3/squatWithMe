@@ -109,3 +109,16 @@ create index if not exists idx_items_list        on items(list_id);
 create index if not exists idx_reactions_item     on reactions(item_id);
 create index if not exists idx_comments_item      on comments(item_id);
 create index if not exists idx_list_members_user  on list_members(user_id);
+
+-- ─────────────────────────────────────────────────────────────
+-- squat_reps — the live rep counter. Ephemeral: one row per user,
+-- overwritten on every save. A row whose `day` isn't today reads as 0,
+-- so the count erases itself at the new day — no history, no cron.
+-- Reaching 100 records the day in `squats` (see api/squat-reps.ts).
+-- ─────────────────────────────────────────────────────────────
+create table if not exists squat_reps (
+    user_id    uuid        primary key references users(id) on delete cascade,
+    day        date        not null,
+    count      integer     not null check (count >= 0),
+    updated_at timestamptz not null default now()
+);

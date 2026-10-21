@@ -1,6 +1,6 @@
 # Task Board
 
-_Last touched: 260811 · **This board is the only tracker.** V2 shipped to production 260806 and tracking moved here — underScore holds no rows for this project. Its plan is closed at `_underScore/work/plans/implemented/260803-squat-with-me-v2.md` (historical record: phases, locked decisions, branch-reconciliation reasoning). Design brief: `_underScore/work/explorations/260804-squat-with-me-uiux-redesign.md` (closed)._
+_Last touched: 261020 · **This board is the only tracker.** V2 shipped to production 260806 and tracking moved here — underScore holds no rows for this project. Its plan is closed at `_underScore/work/plans/implemented/260803-squat-with-me-v2.md` (historical record: phases, locked decisions, branch-reconciliation reasoning). Design brief: `_underScore/work/explorations/260804-squat-with-me-uiux-redesign.md` (closed)._
 
 ## P1 — Blockers
 
@@ -29,6 +29,7 @@ _None_
 
 ## Done
 
+- [x] [FEATURE] Rep counter 261020 — "For those who lack discipline..." −/+ and editable count under the squat button; saved server-side in `squat_reps` (ephemeral, erased at the new day); reaching 100 records the day. Also dropped the `@vercel/node@5.6.16` runtime pin from `vercel.json` — Vercel CLI 65 failed every function locally with it (`dev-server.mjs matches .vercelignore`).
 - [x] **V2 merged to `main` 260806** (PR #1, `4eafb32`) — production. `v2` is an ancestor of main, zero divergence.
 - [x] [UI] Review round 260805 (`31d85c4`) — login redesign, deep-squat mascot, compact footer, maps-link addresses.
 - [x] [CI] Runtime-load gate 260804 (`a608b23`) — added after three ESM defects (`528fc17`, `2a46dfc`) crashed every `/api/*` route in production *twice* with typecheck + lint + test + build all green. Recipe: `_underScore/knowledge/vercel-api-runtime-gate.md`.

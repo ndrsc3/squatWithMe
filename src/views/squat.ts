@@ -4,6 +4,8 @@ import { recordSquat, calculateStreak, RELAUNCH_DATE } from '../squats';
 import { renderStats } from '../leaderboard';
 
 const REFRESH_THROTTLE_MS = 30_000;
+const REPS_SAVE_DEBOUNCE_MS = 400;
+const REPS_MAX = 10_000; // mirrors api/squat-reps.ts
 
 /** The squat tracker — stats panels (You / Today / The Crew) per the 260804 redesign. */
 export class SquatView {
@@ -26,12 +28,49 @@ export class SquatView {
 
     async init(): Promise<void> {
         document.getElementById('squat-button')?.addEventListener('click', () => void this.recordSquatHandler());
+        this.initRepCounter();
         // Refresh on return-to-tab (decision 260804: no websockets for a friends-sized crew).
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') void this.refreshIfStale();
         });
         window.addEventListener('focus', () => void this.refreshIfStale());
         await this.fetchUserData();
+    }
+
+    /** Rep counter — today's live tally, saved server-side (erased at the new day). Hitting 100 records the day. */
+    private initRepCounter(): void {
+        const input = document.getElementById('rep-count') as HTMLInputElement | null;
+        if (!input) return;
+        let saveTimer: number | undefined;
+        const save = async (count: number): Promise<void> => {
+            try {
+                const { recorded } = await apiClient.saveReps(this.today, count);
+                if (recorded && !this.squatToday) {
+                    this.squatToday = true;
+                    this.updateSquatButtonState(true);
+                    await this.fetchUserData();
+                }
+            } catch (error) {
+                console.error('[squat] Failed to save reps:', error);
+            }
+        };
+        const set = (n: number): void => {
+            const value = Math.min(REPS_MAX, Math.max(0, Math.floor(n) || 0));
+            input.value = String(value);
+            // Debounced so a burst of + taps is one write.
+            window.clearTimeout(saveTimer);
+            saveTimer = window.setTimeout(() => void save(value), REPS_SAVE_DEBOUNCE_MS);
+        };
+        document.getElementById('rep-minus')?.addEventListener('click', () => set(Number(input.value) - 1));
+        document.getElementById('rep-plus')?.addEventListener('click', () => set(Number(input.value) + 1));
+        input.addEventListener('change', () => set(Number(input.value)));
+        input.addEventListener('focus', () => input.select());
+        apiClient
+            .getReps(this.today)
+            .then(({ count }) => {
+                if (saveTimer === undefined) input.value = String(count);
+            })
+            .catch((error) => console.error('[squat] Failed to load reps:', error));
     }
 
     private async refreshIfStale(): Promise<void> {
