@@ -1,10 +1,17 @@
--- Squat With Me V2 — initial schema (0001_init)
+-- Squat With Me V2 — the whole schema, in one idempotent file.
 -- Generalized List primitive: one shape serves travel lists now, squats later.
--- Run once against the provisioned Postgres (Vercel Postgres / Neon).
 -- Postgres 13+ (uses gen_random_uuid()).
+--
+-- Applied on EVERY deploy by db/run-schema.mjs (vercel.json buildCommand): preview
+-- builds to the dev branch, the production build to production. Rules, because the
+-- script splits on semicolons and runs unattended (db/run-schema.test.mjs enforces 1):
+--   1. Every statement is re-runnable: `if not exists` (create table/index, add column).
+--   2. No semicolon in a trailing comment (full-line comments are stripped first).
+--   3. No function or DO bodies.
+--   4. Destructive changes (drop, rename) are not done here; the owner runs them by hand.
 
 -- ─────────────────────────────────────────────────────────────
--- users — JWT-authenticated accounts. Friends-only via invite link;
+-- users — JWT-authenticated accounts. Signup is open (anyone with the URL);
 -- the whole site is login-gated, so membership tables control access.
 -- ─────────────────────────────────────────────────────────────
 create table if not exists users (
