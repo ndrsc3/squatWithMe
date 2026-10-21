@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **squatWithMe V2** — a friends-only accountability app: commit to 100 squats/day on a shared leaderboard, and plan the group trip on collaborative Lists (add items, approve, comment). First list: the Feb 2027 Japan snowboard trip. Vanilla TypeScript + Vite SPA, Vercel serverless API, Neon Postgres. Whole site is login-gated (JWT).
 
-Active branch: `v2` (main still serves the legacy V1 app until promotion).
-Plan of record: `_underScore/work/plans/active/260803-squat-with-me-v2.md`.
+**V2 is production.** Merged to `main` 260806 (PR #1); the legacy V1 app is gone. Work on branches off `main`.
+**Tracking lives here** — `docs/TASKS.md` is the only board. The V2 build plan is closed and kept as history at `_underScore/work/plans/implemented/260803-squat-with-me-v2.md` (phases, locked decisions, branch-reconciliation reasoning); underScore carries no open rows for this project.
 
 ## Commands
 
@@ -33,7 +33,7 @@ node db/audit-data.mjs         # Read-only data health check — counts, form, o
 ### Frontend (`src/`)
 - `main.ts` → `app.ts` — slim orchestrator: login gate (`auth-me` on boot), hash router (`#/list/<id>`), theme toggle
 - `views/auth.ts` — login/signup screen
-- `views/squat.ts` — squat tracker (button, stats panels, refresh-on-focus)
+- `views/squat.ts` — squat tracker (button, rep counter, stats panels, refresh-on-focus)
 - `views/lists.ts` — lists overview + list detail (items, reactions, comments); renders user content via `textContent` only (XSS-safe) — keep it that way
 - `api-client.ts` — typed fetch wrappers for the whole API
 - `squats.ts` / `leaderboard.ts` — streak/season calcs (unit-tested) + stats-panels render (You / Today / The Crew)
@@ -42,10 +42,10 @@ node db/audit-data.mjs         # Read-only data health check — counts, form, o
 Vercel serverless functions, flat files. Shared plumbing in `api/_lib/`:
 `db.ts` (the ONLY Postgres seam — `@neondatabase/serverless`, keep provider swaps inside this file) · `auth.ts` (JWT via `jose`, scrypt passwords, `requireUser`) · `http.ts` (method guard, cookie helpers) · `domain.ts` (types) · `users-repo.ts` / `lists-repo.ts` / `squats-repo.ts` (typed data access).
 
-Endpoints: `auth-signup/login/me/logout` · `lists` (GET all w/ membership, POST create) · `list-members` (POST join — open join, friends-trust) · `list-items` (GET/POST, member-gated) · `item-reactions` (POST/DELETE, freeform emoji) · `item-comments` (POST) · `get-users` + `record-squat` (squat tracker, session-authed).
+Endpoints: `auth-signup/login/me/logout` · `lists` (GET all w/ membership, POST create) · `list-members` (POST join — open join, friends-trust) · `list-items` (GET/POST, member-gated) · `item-reactions` (POST/DELETE, freeform emoji) · `item-comments` (POST) · `get-users` + `record-squat` (squat tracker, session-authed) · `squat-reps` (GET/POST live rep counter; reaching 100 records the day).
 
 ### Data (Postgres — Neon via Vercel Marketplace)
-Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list_members`, `items`, `reactions` (PK item+user+emoji), `comments`, `squats` (user+day). Generalized List primitive; squats table replaces the dead legacy KV store (suspended Upstash resource, disconnected 260804).
+Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list_members`, `items`, `reactions` (PK item+user+emoji), `comments`, `squats` (user+day), `squat_reps` (one ephemeral row per user — a row from an earlier day reads as 0, so the counter erases itself daily). Generalized List primitive; squats table replaces the dead legacy KV store (suspended Upstash resource, disconnected 260804).
 
 **Item admission bar (owner rule 260804).** A list item must be a **specific place** — a named resort, a bathable onsen open to day visitors, a real restaurant — carrying a **live official url**, a **postal address**, and **base-area coordinates**. Categories, dish names, and "a town" do not qualify. The address is not decoration: `fillItemDialog` builds the Google Maps link from it and falls back to a fuzzy text search without it. **Food is human-entered by the crew** — don't bulk-seed it; the verified candidate pool lives in `_underScore/vault-Notes/Travel/Loc - Japan.md`.
 
@@ -66,4 +66,4 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 
 ## Git Workflow
 
-Work on `v2`. Push → CI + Vercel preview (deployment-protected). Do not merge to `main` (= production deploy) without owner go-ahead. No auto-commit — floor green + owner approval per commit.
+`main` is production. Work on a feature branch off `main`; push → CI + Vercel preview (deployment-protected). Do not merge to `main` (= production deploy) without owner go-ahead. No auto-commit — floor green + owner approval per commit.

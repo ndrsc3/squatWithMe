@@ -6,8 +6,5 @@
     "routes": [
         { "src": "/api/(.*)", "dest": "/api/$1" },
         { "handle": "filesystem" }
-    ],
-    "functions": {
-        "api/*.ts": { "runtime": "@vercel/node@5.6.16" }
-    }
+    ]
 }

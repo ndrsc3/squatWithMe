@@ -36,3 +36,18 @@ export async function getUsersWithSquats(fromDay: string): Promise<SquatUser[]> 
     }
     return [...byUser.values()];
 }
+
+/** Today's live rep count — 0 when the stored row belongs to an earlier day. */
+export async function getReps(userId: string, day: string): Promise<number> {
+    const { rows } = await sql<{ count: number }>`
+        SELECT count FROM squat_reps WHERE user_id = ${userId} AND day = ${day}`;
+    return rows[0]?.count ?? 0;
+}
+
+/** Overwrite the user's single counter row; a new day replaces yesterday's. */
+export async function setReps(userId: string, day: string, count: number): Promise<void> {
+    await sql`
+        INSERT INTO squat_reps (user_id, day, count) VALUES (${userId}, ${day}, ${count})
+        ON CONFLICT (user_id) DO UPDATE
+        SET day = EXCLUDED.day, count = EXCLUDED.count, updated_at = now()`;
+}
