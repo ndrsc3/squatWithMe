@@ -4,12 +4,14 @@
     "private": true,
     "type": "module",
     "engines": {
-        "node": ">=20"
+        "node": "24.x"
     },
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
+        "dev:check": "node scripts/dev-check.mjs",
+        "dev:full": "node scripts/dev-check.mjs && vercel dev",
         "typecheck": "tsc --noEmit",
         "test": "vitest run",
         "smoke": "node scripts/smoke-api.mjs",

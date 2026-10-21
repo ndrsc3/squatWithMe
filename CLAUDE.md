@@ -12,8 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
+npm run dev:full       # Full local dev: scripts/dev-check.mjs preflight, then vercel dev (use this)
+npm run dev:check      # Preflight only — lockfile, Vercel link, .env.local keys, DATABASE_URL ≠ production
 npm run dev            # Vite dev server (frontend only, no API)
-npx vercel dev         # Full local dev: frontend + serverless functions (use this)
 npm run typecheck      # tsc --noEmit
 npm run lint           # ESLint on src/ api/ vite.config.ts
 npm test               # vitest (streak + auth unit tests)
@@ -56,6 +57,10 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 `.env.local` via `vercel env pull` (repo is linked to project `app-squatwithme`):
 - `DATABASE_URL` — injected by the Neon integration
 - `JWT_SECRET` — set in all three Vercel envs
+
+`.env.example` names the required keys (values never committed). `db/prod-endpoint.mjs` holds the production Neon endpoint id — the one place "is this production?" is answered; unset or unparseable → treated as production (fail closed).
+
+**Node 24** everywhere: `.nvmrc`, `engines` (`24.x` — a `>=` range silently overrides the project setting with Vercel's newest major), and CI.
 
 ## Styling — house system (do not freelance)
 

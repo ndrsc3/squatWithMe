@@ -34,6 +34,7 @@ Thumbs.db
 .vercel
 .env*.local
 .env*
+!.env.example
 public/mockups/
 
 # runtime-load gate scratch (npm run smoke)
