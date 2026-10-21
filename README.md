@@ -37,10 +37,10 @@ A different Node version only produces a warning. `npm run dev:check` runs the c
 ## Checks
 
 ```bash
-npm run typecheck && npm run lint && npm test && npm run build && npm run smoke
+npm run check    # typecheck, lint, test, build, smoke (~3s)
 ```
 
-CI runs the same five checks on every PR. `smoke` imports every API function under Node, which catches the deploy-only failures the other four miss.
+The same script runs as a pre-commit hook (installed by `npm install`) and in CI on every PR. `smoke` imports every API function under Node, which catches the deploy-only failures the other four miss.
 
 For UI changes, also run the browser test before opening the PR:
 
