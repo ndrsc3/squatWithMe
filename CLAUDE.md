@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev:full       # Full local dev: scripts/dev-check.mjs preflight, then vercel dev (use this)
 npm run dev:check      # Preflight only — lockfile, Vercel link, .env.local keys, DATABASE_URL ≠ production
 npm run dev            # Vite dev server (frontend only, no API)
+npm run check          # The floor: typecheck + lint + test + build + smoke — what CI and the pre-commit hook run
 npm run typecheck      # tsc --noEmit
 npm run lint           # ESLint on src/ api/ vite.config.ts
 npm test               # vitest (streak + auth unit tests)
@@ -26,7 +27,7 @@ node db/seed-japan.mjs <user>  # Seed the Japan list (verified set); refuses if 
 node db/audit-data.mjs         # Read-only data health check — counts, form, orphans, geo sanity
 ```
 
-**The floor:** typecheck + lint + test + build + **smoke** must be green before any commit. CI (`.github/workflows/ci.yml`) enforces the same five on push (main, v2) + PRs.
+**The floor:** typecheck + lint + test + build + **smoke** must be green before any commit. One script, `npm run check`, runs all five; the pre-commit hook (`.githooks/pre-commit`, installed by `npm install` via `prepare`) and CI (`.github/workflows/ci.yml`, push to main/v2 + PRs) both run exactly it.
 
 **`npm run smoke` exists because the other four cannot see a broken deployment.** On 260804 every `/api/*` route 500'd in production — twice — with the floor fully green, because no static check ever loads a function under the Node ESM runtime that serves it. The gate emits `api/` with tsc and actually `import()`s each entrypoint. Two real bugs it now blocks: `package.json` missing `"type": "module"` (emitted ESM parsed as CJS → `SyntaxError`), and extensionless relative imports (`moduleResolution: "bundler"` permits them, tsc rewrites nothing, Node's resolver → `ERR_MODULE_NOT_FOUND`). **Relative imports in `api/` must carry `.js`.** Note the `"type"` check is asserted explicitly rather than left to the import: Node 22+ auto-detects ESM syntax, so a modern local Node loads what Vercel's runtime rejects. Recipe + rationale: `_underScore/knowledge/vercel-api-runtime-gate.md`.
 

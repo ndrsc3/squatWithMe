@@ -1,0 +1,4 @@
+#!/bin/sh
+# Same five checks as CI (npm run check). Installed by `npm install` (prepare script).
+# Skip once with: git commit --no-verify
+exec npm run check
