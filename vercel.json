@@ -2,7 +2,7 @@
     "outputDirectory": "dist",
     "installCommand": "npm install",
     "devCommand": "vite --port $PORT",
-    "buildCommand": "npm run build",
+    "buildCommand": "node db/run-schema.mjs && npm run build",
     "routes": [
         { "src": "/api/(.*)", "dest": "/api/$1" },
         { "handle": "filesystem" }

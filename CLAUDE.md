@@ -20,7 +20,7 @@ npm run lint           # ESLint on src/ api/ vite.config.ts
 npm test               # vitest (streak + auth unit tests)
 npm run build          # Vite build → dist/
 npm run smoke          # Runtime-load gate — imports every api/* fn under Node ESM
-node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent)
+node db/run-schema.mjs # Apply db/schema.sql to DATABASE_URL (idempotent; refuses production outside a production build)
 node db/seed-japan.mjs <user>  # Seed the Japan list (verified set); refuses if it exists
 node db/audit-data.mjs         # Read-only data health check — counts, form, orphans, geo sanity
 ```
@@ -55,10 +55,12 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 ## Environment
 
 `.env.local` via `vercel env pull` (repo is linked to project `app-squatwithme`):
-- `DATABASE_URL` — injected by the Neon integration
+- `DATABASE_URL` — two stores: Production = the Neon integration (scoped to Production only); Development + Preview = a custom value pointing at the schema-only Neon branch `dev` (disposable test data, never production rows)
 - `JWT_SECRET` — set in all three Vercel envs
 
 `.env.example` names the required keys (values never committed). `db/prod-endpoint.mjs` holds the production Neon endpoint id — the one place "is this production?" is answered; unset or unparseable → treated as production (fail closed).
+
+**Schema ships with the deploy.** `vercel.json` `buildCommand` runs `db/run-schema.mjs` before `npm run build`: preview builds apply `schema.sql` to `dev`, the production build to production. `npm run build` itself stays DB-free (CI). Rules for `schema.sql` are in its header; `db/run-schema.test.mjs` enforces re-runnability.
 
 **Node 24** everywhere: `.nvmrc`, `engines` (`24.x` — a `>=` range silently overrides the project setting with Vercel's newest major), and CI.
 
