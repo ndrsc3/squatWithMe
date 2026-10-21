@@ -29,6 +29,15 @@ _None_
 
 ## Done
 
+- [x] [DX] Dev process 261021 (PRs #3–#6). The loop is now:
+  - `npm run dev:full` checks your setup, then starts `vercel dev`.
+  - Change the code.
+  - `npm run e2e` drives the real logged-in UI at phone and desktop sizes.
+  - Commit; the hook runs `npm run check`.
+  - Open a PR; CI and the Vercel preview run.
+  - The owner approves and the PR is merged.
+
+  Two databases: production, and a schema-only Neon branch `dev` for Development and Preview. `schema.sql` is applied on every Vercel build, and a guard keeps every build except production's away from the production database. Node 24 everywhere. Plan: `_underScore/work/plans/active/261020-vercel-app-dev-process.md`.
 - [x] [FEATURE] Rep counter 261020 — "For those who lack discipline..." −/+ and editable count under the squat button; saved server-side in `squat_reps` (ephemeral, erased at the new day); reaching 100 records the day. Also dropped the `@vercel/node@5.6.16` runtime pin from `vercel.json` — Vercel CLI 65 failed every function locally with it (`dev-server.mjs matches .vercelignore`).
 - [x] **V2 merged to `main` 260806** (PR #1, `4eafb32`) — production. `v2` is an ancestor of main, zero divergence.
 - [x] [UI] Review round 260805 (`31d85c4`) — login redesign, deep-squat mascot, compact footer, maps-link addresses.
