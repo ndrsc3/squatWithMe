@@ -8,7 +8,7 @@
 //
 // Fail closed: an unset id or an unparseable URL counts as production.
 
-export const PROD_ENDPOINT_ID = null; // set to the production branch's `ep-…` id
+export const PROD_ENDPOINT_ID = 'ep-blue-smoke-awocaq2b';
 
 /** `ep-…` id of a Postgres URL, `-pooler` stripped; null when it can't be read. */
 export function endpointId(url) {
