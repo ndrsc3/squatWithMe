@@ -39,3 +39,7 @@ public/mockups/
 
 # runtime-load gate scratch (npm run smoke)
 .smoke/
+
+# Playwright output (npm run e2e)
+e2e/.results/
+playwright-report/

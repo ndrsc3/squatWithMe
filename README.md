@@ -42,6 +42,14 @@ npm run typecheck && npm run lint && npm test && npm run build && npm run smoke
 
 CI runs the same five checks on every PR. `smoke` imports every API function under Node, which catches the deploy-only failures the other four miss.
 
+For UI changes, also run the browser test before opening the PR:
+
+```bash
+npm run e2e    # signs up a throwaway user on the dev database and drives the rep counter, phone + desktop
+```
+
+It starts `npm run dev:full` if nothing is running on port 3000, clears earlier `e2e-…` users from the dev database first (never production), and saves screenshots to `e2e/.results/shots/`. The first run needs `npx playwright install chromium`.
+
 ## Shipping
 
 Branch off `main`, open a PR, wait for CI and the Vercel preview to go green, then merge. Merging to `main` deploys to production.
