@@ -75,4 +75,17 @@ Schema: `db/schema.sql` — `users`, `lists` (kind: travel/squat/generic), `list
 
 ## Git Workflow
 
-`main` is production. Every change: feature branch off `main` → commits (the pre-commit hook runs `npm run check`) → for UI changes, `npm run e2e` and read its screenshots → PR → CI + Vercel preview (deployment-protected; its build applies `schema.sql` to `dev`) → **owner approves the PR in chat** → merge → verify production (site 200, `/api/auth-me` 401, build log shows `statements applied (VERCEL_ENV=production)`). Never merge or push to `main` without that approval.
+**GitHub flow: every change is a short-lived branch and a PR into `main`. The PR's Vercel preview is the staging check.** Process and rules: `_underScore/knowledge/vercel-app-dev-process.md`.
+
+- **`main`** = production. A GitHub ruleset enforces it: changes arrive only by PR, CI `verify` must pass, the branch must be up to date with `main`, merge commits only, and `main` can't be force-pushed or deleted.
+- **One branch per unit of work** (`feature/`, `fix/`, `chore/`), each in its own worktree: `git worktree add -b feature/X ../squatWithMe-X origin/main`, then inside it `ln -s ../squatWithMe/node_modules node_modules` and `cp -R ../squatWithMe/.vercel ../squatWithMe/.env.local .`. The main checkout stays on `main` and is never worked in.
+- **Agents never merge without the owner's approval in chat.** Agent and owner share one GitHub account, so "reviewed" means that approval plus green CI.
+
+1. **Commit.** The pre-commit hook runs `npm run check`. Never bypass it with `--no-verify`. For UI changes, run `npm run e2e` and read its screenshots.
+2. **Before pushing, `git fetch` and rebase onto `origin/main`** if it moved. Surface conflicts; don't force-resolve.
+3. **Push and open a PR into `main`.**
+4. **CI `verify` and the Vercel preview run on the PR.** The preview is deployment-protected (`vercel curl <path> --deployment <url>` reaches it), and its build applies `schema.sql` to `dev`.
+5. **If GitHub says the branch is out of date:** `gh pr update-branch <n>`, or rebase and push. CI reruns.
+6. **Owner approves in chat, then merge:** `gh pr merge <n> --merge`. GitHub deletes the remote branch.
+7. **Verify production:** the site returns 200, `/api/auth-me` returns 401, and the build log shows `statements applied (VERCEL_ENV=production)`.
+8. **Clean up:** remove the worktree and local branch, and `git -C ../squatWithMe pull --ff-only`.
